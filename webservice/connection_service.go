@@ -3,7 +3,7 @@ package webservice
 import (
 	"github.com/emicklei/go-restful"
 	"github.com/emicklei/landskape/application"
-	"github.com/emicklei/landskape/model"
+	"log"
 )
 
 type ConnectionService struct {
@@ -18,5 +18,11 @@ func NewConnectionService() *ConnectionService {
 	return ws
 }
 func GetAllConnections(req *restful.Request, resp *restful.Response) {
-	resp.WriteEntity(model.Connection{})
+	cons, err := logic.AllConnections()
+	if err != nil {
+		log.Fatalf("[landskape-error] Request:%v,error:%v", req, err)
+		resp.InternalServerError()
+	} else {
+		resp.WriteEntity(cons)
+	}
 }

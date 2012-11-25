@@ -6,13 +6,24 @@ import (
 )
 
 type Logic struct {
-	applicationDao dao.ApplicationDao
-	connectionDao  dao.ConnectionDao
+	ApplicationDao dao.ApplicationDao
+	ConnectionDao  dao.ConnectionDao
+}
+
+func NewLogic(appDao dao.ApplicationDao, conDao dao.ConnectionDao) Logic {
+	return Logic{appDao, conDao}
 }
 
 func (self Logic) AllApplications() (model.Applications, error) {
-	apps := []model.Application{}
-	apps = append(apps, model.Application{})
-	apps = append(apps, model.Application{})
-	return model.Applications{apps}, nil
+	cons := []model.Application{}
+	cons = append(cons, model.Application{})
+	cons = append(cons, model.Application{})
+	return model.Applications{cons}, nil
+}
+
+func (self Logic) AllConnections() (model.Connections, error) {
+	cons := []model.Connection{}
+	cons = append(cons, model.Connection{})
+	cons = append(cons, model.Connection{})
+	return model.Connections{cons}, nil
 }
