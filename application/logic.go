@@ -10,10 +10,6 @@ type Logic struct {
 	ConnectionDao  dao.ConnectionDao
 }
 
-func NewLogic(appDao dao.ApplicationDao, conDao dao.ConnectionDao) Logic {
-	return Logic{appDao, conDao}
-}
-
 func (self Logic) AllApplications() (model.Applications, error) {
 	cons := []model.Application{}
 	cons = append(cons, model.Application{})
