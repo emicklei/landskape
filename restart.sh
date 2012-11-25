@@ -1,0 +1,1 @@
+go fmt ...landskape && go run launcher.go
