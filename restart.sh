@@ -1,1 +1,6 @@
-go fmt ...landskape && go run launcher.go
+go fmt ...landskape && \
+go fmt ...model && \
+go fmt ...dao && \
+go fmt ...webservice && \
+go fmt ...application && \
+go run launcher.go

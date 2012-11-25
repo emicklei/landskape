@@ -5,8 +5,8 @@ import (
 )
 
 type Lifecyle struct {
-	Created, Updated time.Time
-	Who	string
+	Created, Updated     time.Time
+	CreatedBy, UpdatedBy string
 }
 
 type Application struct {
@@ -23,3 +23,6 @@ type Connection struct {
 	From, To, Type string
 	Attributes     []Attribute
 }
+
+type Applications struct{ Application []Application }
+type Connections struct{ Connection []Connection }
