@@ -8,7 +8,6 @@ import (
 
 type ConnectionService struct {
 	restful.WebService
-	logic application.Logic
 }
 
 func NewConnectionService() *ConnectionService {
@@ -18,7 +17,7 @@ func NewConnectionService() *ConnectionService {
 	return ws
 }
 func GetAllConnections(req *restful.Request, resp *restful.Response) {
-	cons, err := logic.AllConnections()
+	cons, err := application.SharedLogic.AllConnections()
 	if err != nil {
 		log.Fatalf("[landskape-error] Request:%v,error:%v", req, err)
 		resp.InternalServerError()

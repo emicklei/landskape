@@ -16,7 +16,7 @@ func main() {
 
 	appDao := dao.ApplicationDao{session.DB("landskape").C("applications")}
 	conDao := dao.ConnectionDao{session.DB("landskape").C("connections")}
-	webservice.SetLogic(application.Logic{appDao, conDao})
+	application.SharedLogic = application.Logic{appDao, conDao}
 
 	restful.Add(webservice.NewApplicationService())
 	restful.Add(webservice.NewConnectionService())
