@@ -14,10 +14,12 @@ type Logic struct {
 }
 
 func (self Logic) AllApplications() (model.Applications, error) {
-	cons := []model.Application{}
-	cons = append(cons, model.Application{})
-	cons = append(cons, model.Application{})
-	return model.Applications{cons}, nil
+	log.Printf("[landskape] get them all")
+	apps, err := self.ApplicationDao.FindAll()
+	if err != nil {
+		return model.Applications{}, err
+	}
+	return model.Applications{apps}, nil
 }
 
 func (self Logic) AllConnections() (model.Connections, error) {
@@ -27,7 +29,7 @@ func (self Logic) AllConnections() (model.Connections, error) {
 	return model.Connections{cons}, nil
 }
 
-func (self Logic) SaveApplication(app *model.Application) (model.Application, error) {
-	log.Printf("saving %#v", app)
-	return model.Application{}, nil
+func (self Logic) SaveApplication(app *model.Application) (*model.Application, error) {
+	log.Printf("[landskape] saving %#v", app)
+	return app, self.ApplicationDao.Save(app)
 }

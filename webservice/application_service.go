@@ -5,6 +5,7 @@ import (
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/model"
 	"log"
+	"net/http"
 )
 
 type ApplicationService struct {
@@ -23,7 +24,7 @@ func GetAllApplications(req *restful.Request, resp *restful.Response) {
 	apps, err := application.SharedLogic.AllApplications()
 	if err != nil {
 		log.Printf("[landskape-error] AllApplications failed:%v", err)
-		resp.WriteError(500, err)
+		resp.WriteError(http.StatusInternalServerError, err)
 	} else {
 		resp.WriteEntity(apps)
 	}
@@ -35,12 +36,12 @@ func CreateApplication(req *restful.Request, resp *restful.Response) {
 	err := req.ReadEntity(&app)
 	if err != nil || app.Id != id {
 		log.Printf("[landskape-error] Read failed:%#v", err)
-		resp.WriteError(500, err)
+		resp.WriteError(http.StatusBadRequest, err)
 	} else {
 		_, err = application.SharedLogic.SaveApplication(app)
 		if err != nil {
 			log.Printf("[landskape-error] Save failed:%#v", err)
-			resp.WriteError(500, err)
+			resp.WriteError(http.StatusInternalServerError, err)
 		}
 	}
 }

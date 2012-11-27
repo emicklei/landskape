@@ -4,6 +4,7 @@ import (
 	"github.com/emicklei/go-restful"
 	"github.com/emicklei/landskape/application"
 	"log"
+	"net/http"
 )
 
 type ConnectionService struct {
@@ -19,8 +20,8 @@ func NewConnectionService() *ConnectionService {
 func GetAllConnections(req *restful.Request, resp *restful.Response) {
 	cons, err := application.SharedLogic.AllConnections()
 	if err != nil {
-		log.Fatalf("[landskape-error] Request:%v,error:%v", req, err)
-		resp.InternalServerError()
+		log.Printf("[landskape-error] Request:%v,error:%v", req, err)
+		resp.WriteError(http.StatusInternalServerError, err)
 	} else {
 		resp.WriteEntity(cons)
 	}
