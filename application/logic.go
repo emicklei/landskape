@@ -3,6 +3,7 @@ package application
 import (
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/model"
+
 	"log"
 )
 
@@ -14,7 +15,6 @@ type Logic struct {
 }
 
 func (self Logic) AllApplications() (model.Applications, error) {
-	log.Printf("[landskape] get them all")
 	apps, err := self.ApplicationDao.FindAll()
 	if err != nil {
 		return model.Applications{}, err
@@ -29,7 +29,12 @@ func (self Logic) AllConnections() (model.Connections, error) {
 	return model.Connections{cons}, nil
 }
 
+func (self Logic) ExistsApplication(id string) bool {
+	result, _ := self.ApplicationDao.FindById(id)
+	log.Printf("res:%#v", result)
+	return result.Id == id
+}
+
 func (self Logic) SaveApplication(app *model.Application) (*model.Application, error) {
-	log.Printf("[landskape] saving %#v", app)
 	return app, self.ApplicationDao.Save(app)
 }

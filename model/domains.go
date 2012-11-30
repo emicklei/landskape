@@ -5,8 +5,8 @@ import (
 )
 
 type Lifecyle struct {
-	Created, Updated     time.Time
-	CreatedBy, UpdatedBy string
+	Modified   time.Time
+	ModifiedBy string
 }
 
 type Application struct {
