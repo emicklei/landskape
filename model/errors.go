@@ -1,7 +1,5 @@
 package model
 
 const (
-	MISMATCH_ID = iota
-	CONFLICT_ID
-	UNKNOWN
+	MISMATCH_ID = 4001 // first special BadRequest(400)
 )

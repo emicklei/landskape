@@ -4,7 +4,7 @@ import (
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/model"
 
-	"log"
+//	"log"
 )
 
 var SharedLogic Logic
@@ -29,10 +29,14 @@ func (self Logic) AllConnections() (model.Connections, error) {
 	return model.Connections{cons}, nil
 }
 
+func (self Logic) GetApplication(id string) (model.Application, error) {
+	return self.ApplicationDao.FindById(id)
+}
+
 func (self Logic) ExistsApplication(id string) bool {
-	result, _ := self.ApplicationDao.FindById(id)
-	log.Printf("res:%#v", result)
-	return result.Id == id
+	return false
+	//	result, _ := self.ApplicationDao.FindById(id)
+	//	return result.Id == id
 }
 
 func (self Logic) SaveApplication(app *model.Application) (*model.Application, error) {

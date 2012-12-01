@@ -4,8 +4,6 @@ import (
 	"github.com/emicklei/landskape/model"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-
-//	"log"
 )
 
 type ApplicationDao struct {
@@ -13,7 +11,7 @@ type ApplicationDao struct {
 }
 
 func (self ApplicationDao) Save(app *model.Application) error {
-	return self.Collection.Insert(app)
+	return self.Collection.Upsert(bson.M({"_id" : app.Id}),app)
 }
 
 func (self ApplicationDao) FindAll() ([]model.Application, error) {
@@ -27,8 +25,7 @@ func (self ApplicationDao) FindAll() ([]model.Application, error) {
 }
 
 func (self ApplicationDao) FindById(id string) (model.Application, error) {
-	query := bson.M{"Id": id}
 	result := model.Application{}
-	err := self.Collection.Find(query).One(&result)
+	err := self.Collection.FindId(id).One(&result)
 	return result, err
 }
