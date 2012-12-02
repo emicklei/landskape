@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+type Validator interface {
+	Validate() error
+}
+
 // Journal is to track who (or what application) 
 // is responsible for the current state of the containing struct.
 type Journal struct {
@@ -35,6 +39,20 @@ type Connection struct {
 	Scope          string
 	From, To, Type string
 	Attributes     []Attribute
+}
+
+func (self Connection) Validate() error {
+	return nil // TODO	
+}
+
+// For querying connections ; each field can be a regular expression
+type ConnectionsFilter struct {
+	From, To, Type, Center string
+}
+
+// For querying applications and connections ; each field can be a regular expression
+type AttributesFilter struct {
+	Name, Value string
 }
 
 // Applications is a container of Application for XML/JSON export

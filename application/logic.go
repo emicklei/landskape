@@ -1,11 +1,11 @@
 package application
 
 import (
+	"errors"
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/model"
+	"log"
 	"time"
-
-//	"log"
 )
 
 var SharedLogic Logic
@@ -23,11 +23,27 @@ func (self Logic) AllApplications() (model.Applications, error) {
 	return model.Applications{apps}, nil
 }
 
-func (self Logic) AllConnections() (model.Connections, error) {
-	cons := []model.Connection{}
-	cons = append(cons, model.Connection{})
-	cons = append(cons, model.Connection{})
+func (self Logic) AllConnections(filter model.ConnectionsFilter) (model.Connections, error) {
+	cons, err := self.ConnectionDao.FindAllMatching(filter)
+	if err != nil {
+		return model.Connections{}, err
+	}
 	return model.Connections{cons}, nil
+}
+
+func (self Logic) SaveConnection(con model.Connection) error {
+	log.Printf("logic.save:%#v", con)
+	// Check from and to for existence
+	if con.From == "" || !self.ExistsApplication(con.From) {
+		return errors.New("Invalid from (empty or non-exist):" + con.From)
+	}
+	if con.To == "" || !self.ExistsApplication(con.To) {
+		return errors.New("Invalid to (empty or non-exist):" + con.To)
+	}
+	if con.Type == "" {
+		return errors.New("Invalid type (empty)")
+	}
+	return self.ConnectionDao.Save(con)
 }
 
 func (self Logic) GetApplication(id string) (model.Application, error) {
@@ -41,7 +57,7 @@ func (self Logic) DeleteApplication(id string) error {
 
 func (self Logic) ExistsApplication(id string) bool {
 	return false
-	//	result, _ := self.ApplicationDao.FindById(id)
+	//	result, _ := self.ApplicationDao.Exists(id)
 	//	return result.Id == id
 }
 

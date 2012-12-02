@@ -77,6 +77,7 @@ func PostApplication(req *restful.Request, resp *restful.Response) {
 }
 
 func PutApplication(req *restful.Request, resp *restful.Response) {
+	scope := req.PathParameter("scope")
 	id := req.PathParameter("id")
 	app := new(model.Application)
 	err := req.ReadEntity(&app)
@@ -86,6 +87,11 @@ func PutApplication(req *restful.Request, resp *restful.Response) {
 	}
 	if app.Id != id {
 		err := restful.NewError(model.MISMATCH_ID, fmt.Sprintf("Id mismatch: %v != %v", app.Id, id))
+		resp.WriteError(http.StatusBadRequest, err)
+		return
+	}
+	if app.Scope != "" && app.Scope != scope {
+		err := restful.NewError(model.MISMATCH_SCOPE, fmt.Sprintf("Scope mismatch: %v != %v", app.Scope, scope))
 		resp.WriteError(http.StatusBadRequest, err)
 		return
 	}
