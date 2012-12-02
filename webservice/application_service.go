@@ -18,13 +18,13 @@ type ApplicationService struct {
 
 func NewApplicationService() *ApplicationService {
 	ws := new(ApplicationService)
-	ws.Path("/applications").
+	ws.Path("/{scope}/applications").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_XML, restful.MIME_JSON)
 	ws.Route(ws.GET("").To(GetAllApplications))
 	ws.Route(ws.GET("/{id}").To(GetApplication))
 	ws.Route(ws.PUT("/{id}").To(PutApplication))
-	ws.Route(ws.POST("/{id}").To(PostApplication))
+	ws.Route(ws.POST("").To(PostApplication))
 	return ws
 }
 

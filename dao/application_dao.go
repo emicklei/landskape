@@ -11,7 +11,8 @@ type ApplicationDao struct {
 }
 
 func (self ApplicationDao) Save(app *model.Application) error {
-	return self.Collection.Upsert(bson.M({"_id" : app.Id}),app)
+	_, err := self.Collection.Upsert(bson.M{"_id": app.Id}, app) // ChangeInfo
+	return err
 }
 
 func (self ApplicationDao) FindAll() ([]model.Application, error) {

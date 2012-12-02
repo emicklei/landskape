@@ -13,7 +13,7 @@ type ConnectionService struct {
 
 func NewConnectionService() *ConnectionService {
 	ws := new(ConnectionService)
-	ws.Path("/connections").Consumes(restful.MIME_XML).Produces(restful.MIME_XML)
+	ws.Path("/{scope}/connections").Consumes(restful.MIME_XML).Produces(restful.MIME_XML)
 	ws.Route(ws.GET("").To(GetAllConnections))
 	return ws
 }

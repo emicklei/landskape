@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 )
+
 // Lifecyle is to track who (or what application) 
 // is responsible for the current state of the containing struct.
 type Lifecyle struct {
@@ -14,7 +15,7 @@ type Lifecyle struct {
 // Examples are: Webservice, Database schema, Ftp server, Third party solution
 type Application struct {
 	Lifecyle
-	Scope		string
+	Scope      string
 	Id         string `bson:"_id"`
 	Attributes []Attribute
 }
@@ -22,7 +23,7 @@ type Application struct {
 // Attribute is a generic key-value pair of strings
 // Each attribute has its own lifecyle to track value changes
 type Attribute struct {
-	Lifecyle	
+	Lifecyle
 	Name, Value string
 }
 
@@ -31,7 +32,7 @@ type Attribute struct {
 // Example of Type are:  http, https, aq, jdbc, ftp, smtp
 type Connection struct {
 	Lifecyle
-	Scope		string
+	Scope          string
 	From, To, Type string
 	Attributes     []Attribute
 }
