@@ -4,9 +4,9 @@ import (
 	"time"
 )
 
-// Lifecyle is to track who (or what application) 
+// Journal is to track who (or what application) 
 // is responsible for the current state of the containing struct.
-type Lifecyle struct {
+type Journal struct {
 	Modified   time.Time
 	ModifiedBy string
 }
@@ -14,7 +14,7 @@ type Lifecyle struct {
 // Application is the generic name for a IT landscape object.
 // Examples are: Webservice, Database schema, Ftp server, Third party solution
 type Application struct {
-	Lifecyle
+	Journal
 	Scope      string
 	Id         string `bson:"_id"`
 	Attributes []Attribute
@@ -23,7 +23,7 @@ type Application struct {
 // Attribute is a generic key-value pair of strings
 // Each attribute has its own lifecyle to track value changes
 type Attribute struct {
-	Lifecyle
+	Journal
 	Name, Value string
 }
 
@@ -31,7 +31,7 @@ type Attribute struct {
 // From and To refer to the Id of the Application.
 // Example of Type are:  http, https, aq, jdbc, ftp, smtp
 type Connection struct {
-	Lifecyle
+	Journal
 	Scope          string
 	From, To, Type string
 	Attributes     []Attribute

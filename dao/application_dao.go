@@ -30,3 +30,7 @@ func (self ApplicationDao) FindById(id string) (model.Application, error) {
 	err := self.Collection.FindId(id).One(&result)
 	return result, err
 }
+
+func (self ApplicationDao) RemoveById(id string) error {
+	return self.Collection.Remove(bson.M{"_id": id})
+}

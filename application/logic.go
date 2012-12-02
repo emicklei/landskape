@@ -3,6 +3,7 @@ package application
 import (
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/model"
+	"time"
 
 //	"log"
 )
@@ -33,6 +34,11 @@ func (self Logic) GetApplication(id string) (model.Application, error) {
 	return self.ApplicationDao.FindById(id)
 }
 
+func (self Logic) DeleteApplication(id string) error {
+	// TODO remove all its connections
+	return self.ApplicationDao.RemoveById(id)
+}
+
 func (self Logic) ExistsApplication(id string) bool {
 	return false
 	//	result, _ := self.ApplicationDao.FindById(id)
@@ -40,5 +46,6 @@ func (self Logic) ExistsApplication(id string) bool {
 }
 
 func (self Logic) SaveApplication(app *model.Application) (*model.Application, error) {
+	app.Modified = time.Now()
 	return app, self.ApplicationDao.Save(app)
 }

@@ -21,11 +21,22 @@ func NewApplicationService() *ApplicationService {
 	ws.Path("/{scope}/applications").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_XML, restful.MIME_JSON)
+
 	ws.Route(ws.GET("").To(GetAllApplications))
 	ws.Route(ws.GET("/{id}").To(GetApplication))
 	ws.Route(ws.PUT("/{id}").To(PutApplication))
 	ws.Route(ws.POST("").To(PostApplication))
+	ws.Route(ws.DELETE("/{id}").To(DeleteApplication))
 	return ws
+}
+
+func DeleteApplication(req *restful.Request, resp *restful.Response) {
+	id := req.PathParameter("id")
+	err := application.SharedLogic.DeleteApplication(id)
+	if err != nil {
+		resp.WriteError(http.StatusInternalServerError, err)
+		return
+	}
 }
 
 func GetApplication(req *restful.Request, resp *restful.Response) {
