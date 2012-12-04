@@ -12,6 +12,12 @@ const (
 	NO_UPDATE = false
 )
 
+func ApplicationService_Doc(doc *DocBuilder) {
+	doc.Comment("Service that can crud apps")
+	doc.PathParam("scope","organizing name for grouping applications")
+	doc.PathParam("id","application unique identifier")
+	return
+}
 type ApplicationService struct {
 	restful.WebService
 }
@@ -22,14 +28,19 @@ func NewApplicationService() *ApplicationService {
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_XML, restful.MIME_JSON)
 
-	ws.Route(ws.GET("").To(GetAllApplications).Doc(`Get all applications for a given scope`))
-	ws.Route(ws.GET("/{id}").To(GetApplication).Doc(`Get the application by its ID for a given scope`))
-	ws.Route(ws.PUT("/{id}").To(PutApplication).Doc(`Create a new the application using this ID for a given scope`))
-	ws.Route(ws.POST("").To(PostApplication).Doc(`Update an existing or create a new the application using this ID for a given scope`))
-	ws.Route(ws.DELETE("/{id}").To(DeleteApplication).Doc(`Delete an existing application using this ID for a given scope`))
+	ws.Route(ws.GET("").To(GetAllApplications))
+	ws.Route(ws.GET("/{id}").To(GetApplication))
+	ws.Route(ws.PUT("/{id}").To(PutApplication))
+	ws.Route(ws.POST("").To(PostApplication))
+	ws.Route(ws.DELETE("/{id}").To(DeleteApplication))
 	return ws
 }
 
+// this is an idea
+func DeleteApplication_Doc(doc *DocBuilder) {
+	
+	return 
+}
 func DeleteApplication(req *restful.Request, resp *restful.Response) {
 	id := req.PathParameter("id")
 	err := application.SharedLogic.DeleteApplication(id)

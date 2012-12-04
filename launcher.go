@@ -1,23 +1,23 @@
 package main
 
 import (
-	"github.com/emicklei/go-restful"
+	"flag"
 	"github.com/dmotylev/goproperties/src/goproperties"
+	"github.com/emicklei/go-restful"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/webservice"
 	"labix.org/v2/mgo"
 	"log"
-	"net/http"   
-	"flag"
+	"net/http"
 	"os"
 )
 
-var propertiesFile = flag.String("config" , "landskape.properties" , "the configuration file")
+var propertiesFile = flag.String("config", "landskape.properties", "the configuration file")
 
-func main() {     
-	flag.Parse()  
-	props, _ := readProperties(*propertiesFile) 
+func main() {
+	flag.Parse()
+	props, _ := readProperties(*propertiesFile)
 	log.Printf("props:%#v", props)
 	session, _ := mgo.Dial(props["mongo.connection"])
 	defer session.Close()
@@ -28,11 +28,11 @@ func main() {
 
 	restful.Add(webservice.NewApplicationService())
 	restful.Add(webservice.NewConnectionService())
-	log.Print(restful.Wadl("http://"+ props["http.server.host"] + ":" + props["http.server.port"]))
+	log.Print(restful.Wadl("http://" + props["http.server.host"] + ":" + props["http.server.port"]))
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))
 }
 
-func readProperties(filename string) (map[string]string , error) {
+func readProperties(filename string) (map[string]string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		log.Fatalf("failed to open %s: %s", filename, err)
