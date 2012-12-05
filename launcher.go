@@ -28,6 +28,11 @@ func main() {
 
 	restful.Add(webservice.NewApplicationService())
 	restful.Add(webservice.NewConnectionService())
+	
+	// expose api using swagger
+	restful.SwaggerBasePath("http://" + props["http.server.host"] + ":" + props["http.server.port"])
+	restful.Add(restful.SwaggerService())
+	
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))
 }
 
