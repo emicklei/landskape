@@ -45,9 +45,9 @@ func (self Connection) Validate() error {
 	return nil // TODO	
 }
 
-// For querying connections ; each field can be a regular expression
+// For querying connections ; each field can be single or comma separated of regular expressions
 type ConnectionsFilter struct {
-	From, To, Type, Center string
+	Froms, Tos, Types, Centers []string
 }
 
 // For querying applications and connections ; each field can be a regular expression

@@ -28,7 +28,6 @@ func main() {
 
 	restful.Add(webservice.NewApplicationService())
 	restful.Add(webservice.NewConnectionService())
-	log.Print(restful.Wadl("http://" + props["http.server.host"] + ":" + props["http.server.port"]))
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))
 }
 

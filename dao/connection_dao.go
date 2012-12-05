@@ -25,3 +25,8 @@ func (self ConnectionDao) Save(con model.Connection) error {
 	_, err := self.Collection.Upsert(query, con) // ChangeInfo
 	return err
 }
+
+func (self ConnectionDao) Remove(con model.Connection) error {
+	query := bson.M{"from": con.From, "to": con.To, "type": con.Type}
+	return self.Collection.Remove(query)
+}

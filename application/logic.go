@@ -31,6 +31,10 @@ func (self Logic) AllConnections(filter model.ConnectionsFilter) (model.Connecti
 	return model.Connections{cons}, nil
 }
 
+func (self Logic) DeleteConnection(con model.Connection) error {
+	return self.ConnectionDao.Remove(con)
+}
+
 func (self Logic) SaveConnection(con model.Connection) error {
 	log.Printf("logic.save:%#v", con)
 	// Check from and to for existence

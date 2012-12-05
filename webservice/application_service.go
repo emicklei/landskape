@@ -12,12 +12,6 @@ const (
 	NO_UPDATE = false
 )
 
-func ApplicationService_Doc(doc *DocBuilder) {
-	doc.Comment("Service that can crud apps")
-	doc.PathParam("scope","organizing name for grouping applications")
-	doc.PathParam("id","application unique identifier")
-	return
-}
 type ApplicationService struct {
 	restful.WebService
 }
@@ -28,20 +22,15 @@ func NewApplicationService() *ApplicationService {
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_XML, restful.MIME_JSON)
 
-	ws.Route(ws.GET("").To(GetAllApplications))
-	ws.Route(ws.GET("/{id}").To(GetApplication))
-	ws.Route(ws.PUT("/{id}").To(PutApplication))
-	ws.Route(ws.POST("").To(PostApplication))
-	ws.Route(ws.DELETE("/{id}").To(DeleteApplication))
+	ws.Route(ws.GET("").To(getAllApplications))
+	ws.Route(ws.GET("/{id}").To(getApplication))
+	ws.Route(ws.PUT("/{id}").To(putApplication))
+	ws.Route(ws.POST("").To(postApplication))
+	ws.Route(ws.DELETE("/{id}").To(deleteApplication))
 	return ws
 }
 
-// this is an idea
-func DeleteApplication_Doc(doc *DocBuilder) {
-	
-	return 
-}
-func DeleteApplication(req *restful.Request, resp *restful.Response) {
+func deleteApplication(req *restful.Request, resp *restful.Response) {
 	id := req.PathParameter("id")
 	err := application.SharedLogic.DeleteApplication(id)
 	if err != nil {
@@ -50,7 +39,7 @@ func DeleteApplication(req *restful.Request, resp *restful.Response) {
 	}
 }
 
-func GetApplication(req *restful.Request, resp *restful.Response) {
+func getApplication(req *restful.Request, resp *restful.Response) {
 	id := req.PathParameter("id")
 	app, err := application.SharedLogic.GetApplication(id)
 	if err != nil {
@@ -60,7 +49,7 @@ func GetApplication(req *restful.Request, resp *restful.Response) {
 	resp.WriteEntity(app)
 }
 
-func GetAllApplications(req *restful.Request, resp *restful.Response) {
+func getAllApplications(req *restful.Request, resp *restful.Response) {
 	apps, err := application.SharedLogic.AllApplications()
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
@@ -69,7 +58,7 @@ func GetAllApplications(req *restful.Request, resp *restful.Response) {
 	resp.WriteEntity(apps)
 }
 
-func PostApplication(req *restful.Request, resp *restful.Response) {
+func postApplication(req *restful.Request, resp *restful.Response) {
 	app := new(model.Application)
 	err := req.ReadEntity(&app)
 	if err != nil {
@@ -87,7 +76,7 @@ func PostApplication(req *restful.Request, resp *restful.Response) {
 	}
 }
 
-func PutApplication(req *restful.Request, resp *restful.Response) {
+func putApplication(req *restful.Request, resp *restful.Response) {
 	scope := req.PathParameter("scope")
 	id := req.PathParameter("id")
 	app := new(model.Application)
