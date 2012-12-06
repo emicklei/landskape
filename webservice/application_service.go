@@ -12,12 +12,8 @@ const (
 	NO_UPDATE = false
 )
 
-type ApplicationService struct {
-	restful.WebService
-}
-
-func NewApplicationService() *ApplicationService {
-	ws := new(ApplicationService)
+func NewApplicationService() *restful.WebService {
+	ws := new(restful.WebService)
 	ws.Path("/{scope}/applications").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_XML, restful.MIME_JSON)

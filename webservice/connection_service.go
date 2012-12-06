@@ -9,12 +9,8 @@ import (
 	"strings"
 )
 
-type ConnectionService struct {
-	restful.WebService
-}
-
-func NewConnectionService() *ConnectionService {
-	ws := new(ConnectionService)
+func NewConnectionService() *restful.WebService {
+	ws := new(restful.WebService)
 	ws.Path("/{scope}/connections").
 		PathParam("scope", "organization name to group applications and connections").
 		Consumes(restful.MIME_XML).
@@ -22,19 +18,31 @@ func NewConnectionService() *ConnectionService {
 
 	ws.Route(ws.GET("?from={from}&to={to}&type={type}&center={center}").
 		Doc(`Get all (filtered) connections for all applications and the given scope`).
+		QueryParam("from", "comma separated list of application ids").
+		QueryParam("to", "comma separated list of application ids").
+		QueryParam("type", "comma separated list of known connection types").
+		QueryParam("center", "comma separated list of application ids").
 		To(getFilteredConnections).
 		Writes(model.Connection{}))
 
 	ws.Route(ws.PUT("/from/{from}/to/{to}/type/{type}?allowCreate={true|false}").
 		Doc(`Create a new connection using the from,to,type values`).
-		PathParam("from", "comma separated list of application ids").
-		PathParam("to", "comma separated list of application ids").
-		PathParam("type", "comma separated list of application ids").
+		PathParam("from", "application id").
+		PathParam("to", "application id").
+		PathParam("type", "indicate type of connection, e.g. http,jdbc,ftp,aq").
 		QueryParam("allowCreate", "if true then create any missing applications").
 		To(putConnection).
 		Reads(model.Connection{}))
+
+	ws.Route(ws.DELETE("/from/{from}/to/{to}/type/{type}").
+		Doc(`Delete an existing connection using the from,to,type values`).
+		PathParam("from", "application id").
+		PathParam("to", "application id").
+		PathParam("type", "indicate type of connection, e.g. http,jdbc,ftp,aq").
+		To(deleteConnection))
 	return ws
 }
+
 func getFilteredConnections(req *restful.Request, resp *restful.Response) {
 	filter := model.ConnectionsFilter{
 		Froms:   strings.Split(req.QueryParameter("from"), ","),

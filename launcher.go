@@ -18,7 +18,6 @@ var propertiesFile = flag.String("config", "landskape.properties", "the configur
 func main() {
 	flag.Parse()
 	props, _ := readProperties(*propertiesFile)
-	log.Printf("props:%#v", props)
 	session, _ := mgo.Dial(props["mongo.connection"])
 	defer session.Close()
 
@@ -28,11 +27,11 @@ func main() {
 
 	restful.Add(webservice.NewApplicationService())
 	restful.Add(webservice.NewConnectionService())
-	
+
 	// expose api using swagger
-	restful.SwaggerBasePath("http://" + props["http.server.host"] + ":" + props["http.server.port"])
-	restful.Add(restful.SwaggerService())
-	
+	basePath := "http://" + props["http.server.host"] + ":" + props["http.server.port"]
+	restful.Add(restful.NewSwaggerService(basePath, "/api-docs.json"))
+
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))
 }
 
