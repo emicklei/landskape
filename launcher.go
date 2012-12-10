@@ -16,6 +16,7 @@ import (
 var propertiesFile = flag.String("config", "landskape.properties", "the configuration file")
 
 func main() {
+	log.Print("[landskape] service startup...")	
 	flag.Parse()
 	props, _ := readProperties(*propertiesFile)
 	session, _ := mgo.Dial(props["mongo.connection"])

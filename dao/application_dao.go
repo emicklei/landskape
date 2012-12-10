@@ -16,6 +16,7 @@ func (self ApplicationDao) Save(app *model.Application) error {
 }
 
 func (self ApplicationDao) FindAll() ([]model.Application, error) {
+	model.Debug("dao",self)	
 	query := bson.M{}
 	result := []model.Application{}
 	err := self.Collection.Find(query).All(&result)
