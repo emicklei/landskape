@@ -1,8 +1,9 @@
 package model
 
 import "github.com/emicklei/hopwatch"
+
 func Debug(args ...interface{}) {
-	hopwatch.Display(args...).Break()
+	hopwatch.CallerOffset(1).Display(args...).Break()
 }
 
 const (

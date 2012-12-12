@@ -6,19 +6,19 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-type ApplicationDao struct {
+type SystemDao struct {
 	Collection *mgo.Collection
 }
 
-func (self ApplicationDao) Save(app *model.Application) error {
+func (self SystemDao) Save(app *model.System) error {
 	_, err := self.Collection.Upsert(bson.M{"_id": app.Id}, app) // ChangeInfo
 	return err
 }
 
-func (self ApplicationDao) FindAll() ([]model.Application, error) {
-	model.Debug("dao",self)	
+func (self SystemDao) FindAll() ([]model.System, error) {
+	model.Debug("dao", self)
 	query := bson.M{}
-	result := []model.Application{}
+	result := []model.System{}
 	err := self.Collection.Find(query).All(&result)
 	if err != nil {
 		return result, err
@@ -26,12 +26,12 @@ func (self ApplicationDao) FindAll() ([]model.Application, error) {
 	return result, nil
 }
 
-func (self ApplicationDao) FindById(id string) (model.Application, error) {
-	result := model.Application{}
+func (self SystemDao) FindById(id string) (model.System, error) {
+	result := model.System{}
 	err := self.Collection.FindId(id).One(&result)
 	return result, err
 }
 
-func (self ApplicationDao) RemoveById(id string) error {
+func (self SystemDao) RemoveById(id string) error {
 	return self.Collection.Remove(bson.M{"_id": id})
 }

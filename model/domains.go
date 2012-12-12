@@ -8,16 +8,16 @@ type Validator interface {
 	Validate() error
 }
 
-// Journal is to track who (or what application) 
+// Journal is to track who (or what System) 
 // is responsible for the current state of the containing struct.
 type Journal struct {
 	Modified   time.Time
 	ModifiedBy string
 }
 
-// Application is the generic name for a IT landscape object.
+// System is the generic name for a IT landscape object.
 // Examples are: Webservice, Database schema, Ftp server, Third party solution
-type Application struct {
+type System struct {
 	Journal
 	Scope      string
 	Id         string `bson:"_id"`
@@ -32,7 +32,7 @@ type Attribute struct {
 }
 
 // Connection is the generic name for a logical connection between 2 IT landscape object.
-// From and To refer to the Id of the Application.
+// From and To refer to the Id of the System.
 // Example of Type are:  http, https, aq, jdbc, ftp, smtp
 type Connection struct {
 	Journal
@@ -50,13 +50,13 @@ type ConnectionsFilter struct {
 	Froms, Tos, Types, Centers []string
 }
 
-// For querying applications and connections ; each field can be a regular expression
+// For querying Systems and connections ; each field can be a regular expression
 type AttributesFilter struct {
 	Name, Value string
 }
 
-// Applications is a container of Application for XML/JSON export
-type Applications struct{ Application []Application }
+// Systems is a container of System for XML/JSON export
+type Systems struct{ System []System }
 
-// Connections is a container of Application for XML/JSON export
+// Connections is a container of System for XML/JSON export
 type Connections struct{ Connection []Connection }

@@ -16,7 +16,8 @@ func NewConnectionService() *restful.WebService {
 		Consumes(restful.MIME_XML).
 		Produces(restful.MIME_XML)
 
-	ws.Route(ws.GET("?from={from}&to={to}&type={type}&center={center}").
+	//	ws.Route(ws.GET("?from={from}&to={to}&type={type}&center={center}").
+	ws.Route(ws.GET("/").
 		Doc(`Get all (filtered) connections for all applications and the given scope`).
 		QueryParam("from", "comma separated list of application ids").
 		QueryParam("to", "comma separated list of application ids").
@@ -25,7 +26,8 @@ func NewConnectionService() *restful.WebService {
 		To(getFilteredConnections).
 		Writes(model.Connection{}))
 
-	ws.Route(ws.PUT("/from/{from}/to/{to}/type/{type}?allowCreate={true|false}").
+	//	ws.Route(ws.PUT("/from/{from}/to/{to}/type/{type}?allowCreate={true|false}").
+	ws.Route(ws.PUT("/from/{from}/to/{to}/type/{type}").
 		Doc(`Create a new connection using the from,to,type values`).
 		PathParam("from", "application id").
 		PathParam("to", "application id").
