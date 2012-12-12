@@ -2,6 +2,7 @@ package webservice
 
 import (
 	"github.com/emicklei/go-restful"
+	"github.com/emicklei/hopwatch"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/model"
 	"log"
@@ -47,11 +48,11 @@ func NewConnectionService() *restful.WebService {
 
 func getFilteredConnections(req *restful.Request, resp *restful.Response) {
 	filter := model.ConnectionsFilter{
-		Froms:   strings.Split(req.QueryParameter("from"), ","),
-		Tos:     strings.Split(req.QueryParameter("to"), ","),
-		Types:   strings.Split(req.QueryParameter("type"), ","),
-		Centers: strings.Split(req.QueryParameter("center"), ",")}
-	log.Printf("filter:%#v", filter)
+		Froms:   asFilterParameter(req.QueryParameter("from")),
+		Tos:     asFilterParameter(req.QueryParameter("to")),
+		Types:   asFilterParameter(req.QueryParameter("type")),
+		Centers: asFilterParameter(req.QueryParameter("center"))}
+	hopwatch.Display("filter", filter)
 	cons, err := application.SharedLogic.AllConnections(filter)
 	if err != nil {
 		logError("getFilteredConnections", err)
@@ -59,6 +60,13 @@ func getFilteredConnections(req *restful.Request, resp *restful.Response) {
 		return
 	}
 	resp.WriteEntity(cons)
+}
+
+func asFilterParameter(param string) (list []string) {
+	if param == "" {
+		return list
+	}
+	return strings.Split(param, ",")
 }
 
 func putConnection(req *restful.Request, resp *restful.Response) {

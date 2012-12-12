@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/model"
-	"log"
+	//	"log"
 	"time"
 )
 
@@ -36,7 +36,6 @@ func (self Logic) DeleteConnection(con model.Connection) error {
 }
 
 func (self Logic) SaveConnection(con model.Connection) error {
-	log.Printf("logic.save:%#v", con)
 	// Check from and to for existence
 	if con.From == "" || !self.ExistsSystem(con.From) {
 		return errors.New("Invalid from (empty or non-exist):" + con.From)
@@ -60,9 +59,7 @@ func (self Logic) DeleteSystem(id string) error {
 }
 
 func (self Logic) ExistsSystem(id string) bool {
-	return false
-	//	result, _ := self.SystemDao.Exists(id)
-	//	return result.Id == id
+	return self.SystemDao.Exists(id)
 }
 
 func (self Logic) SaveSystem(app *model.System) (*model.System, error) {

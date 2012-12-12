@@ -10,13 +10,17 @@ type SystemDao struct {
 	Collection *mgo.Collection
 }
 
+func (self SystemDao) Exists(id string) bool {
+	_, err := self.FindById(id)
+	return err == nil
+}
+
 func (self SystemDao) Save(app *model.System) error {
 	_, err := self.Collection.Upsert(bson.M{"_id": app.Id}, app) // ChangeInfo
 	return err
 }
 
 func (self SystemDao) FindAll() ([]model.System, error) {
-	model.Debug("dao", self)
 	query := bson.M{}
 	result := []model.System{}
 	err := self.Collection.Find(query).All(&result)
