@@ -27,7 +27,7 @@ func (self ConnectionDao) FindAllMatching(filter model.ConnectionsFilter) ([]mod
 			query["to"] = bson.M{"$in": filter.Tos}
 		}
 	}
-	// model.Debug("query", query)
+	model.Debug("query", query)
 	result := []model.Connection{}
 	err := self.Collection.Find(query).All(&result)
 	if err != nil {
