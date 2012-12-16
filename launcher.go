@@ -31,7 +31,12 @@ func main() {
 
 	// expose api using swagger
 	basePath := "http://" + props["http.server.host"] + ":" + props["http.server.port"]
-	restful.Add(restful.NewSwaggerService(basePath, "/api-docs.json"))
+	config := restful.SwaggerConfig{
+		WebServicesUrl:  basePath,
+		ApiPath:         "/apidocs.json",
+		SwaggerPath:     "/apidocs/",
+		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7"}
+	restful.InstallSwaggerService(config)
 
 	log.Printf("[landskape] ready to serve on %v\n", basePath)
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))
