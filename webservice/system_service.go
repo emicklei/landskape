@@ -16,13 +16,28 @@ func NewSystemService() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.Path("/{scope}/systems").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
-		Produces(restful.MIME_XML, restful.MIME_JSON)
+		Produces(restful.MIME_XML, restful.MIME_JSON).
+		Param(ws.PathParameter("scope", "organization name to group system and connections"))
 
-	ws.Route(ws.GET("").To(getAllSystems))
-	ws.Route(ws.GET("/{id}").To(getSystem))
-	ws.Route(ws.PUT("/{id}").To(putSystem))
-	ws.Route(ws.POST("").To(postSystem))
-	ws.Route(ws.DELETE("/{id}").To(deleteSystem))
+	ws.Route(ws.GET("").To(getAllSystems).
+		// docs
+		Doc("list all known systems"))
+	ws.Route(ws.GET("/{id}").To(getSystem).
+		// docs
+		Doc("get the system using its id").
+		Param(ws.PathParameter("id", "identifier of the system")))
+	ws.Route(ws.PUT("/{id}").To(putSystem).
+		// docs
+		Doc("create the system using its id").
+		Param(ws.PathParameter("id", "identifier of the system")))
+	ws.Route(ws.POST("").To(postSystem).
+		// docs
+		Doc("update the system using its id").
+		Param(ws.PathParameter("id", "identifier of the system")))
+	ws.Route(ws.DELETE("/{id}").To(deleteSystem).
+		// docs
+		Doc("delete the system using its id").
+		Param(ws.PathParameter("id", "identifier of the system")))
 	return ws
 }
 
