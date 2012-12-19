@@ -8,6 +8,10 @@ type Validator interface {
 	Validate() error
 }
 
+type AttributesHolder interface {
+	AttributeList() []Attribute
+}
+
 // Journal is to track who (or what System) 
 // is responsible for the current state of the containing struct.
 type Journal struct {
@@ -22,13 +26,26 @@ type System struct {
 	Scope      string
 	Id         string `bson:"_id"`
 	Attributes []Attribute
+	ParentId   string
 }
+
+func (self System) AttributeList() []Attribute { return self.Attributes }
 
 // Attribute is a generic key-value pair of strings
 // Each attribute has its own lifecyle to track value changes
 type Attribute struct {
 	Journal
 	Name, Value string
+}
+
+// AttributeValue finds the value of an attribute for a given name
+func AttributeValue(holder AttributesHolder, name string) string {
+	for _, each := range holder.AttributeList() {
+		if each.Name == name {
+			return each.Value
+		}
+	}
+	return ""
 }
 
 // Connection is the generic name for a logical connection between 2 IT landscape object.
@@ -40,6 +57,8 @@ type Connection struct {
 	From, To, Type string
 	Attributes     []Attribute
 }
+
+func (self Connection) AttributeList() []Attribute { return self.Attributes }
 
 func (self Connection) Validate() error {
 	return nil // TODO	
