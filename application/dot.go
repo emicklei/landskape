@@ -22,11 +22,18 @@ type dotBuilder struct {
 	nodes map[string]string
 }
 
+func newDotBuilder() dotBuilder {
+	builder := dotBuilder{}
+	builder.nodes = map[string]string{}
+	return builder
+}
+
 func (self edge) String() string {
 	return fmt.Sprintf("%v -> (%v,%v) -> %v", self.from, self.label, self.color, self.to)
 }
 
-func (self dotBuilder) BuildFromAll(connections []model.Connection) {
+// BuildFromAll composes the edges and nodes from a collection of Connection
+func (self *dotBuilder) BuildFromAll(connections []model.Connection) {
 	for _, each := range connections {
 		edge := edge{}
 		edge.from = labelForNodeIn(each.From, self.nodes)
@@ -58,6 +65,11 @@ func (self dotBuilder) writeDotFile(output string) error {
 		return err
 	}
 	defer fo.Close()
+	self.writeDot(fo)
+	return nil
+}
+
+func (self dotBuilder) writeDot(fo io.Writer) {
 	io.WriteString(fo, "digraph {")
 	// nodes
 	usedNodeValues := map[string]bool{}
@@ -68,19 +80,18 @@ func (self dotBuilder) writeDotFile(output string) error {
 	for each, ok := range usedNodeValues {
 		if ok {
 			nodeName := keyByValue(self.nodes, each)
-			io.WriteString(fo, fmt.Sprintf(" %v [label=\"%v\"]\n", each, nodeName))
+			io.WriteString(fo, fmt.Sprintf("\n\t%v [label=\"%v\"]", each, nodeName))
 		}
 	}
 	// edges
 	for _, each := range self.edges {
-		io.WriteString(fo, fmt.Sprintf("\t %v-> %v [label=\"%v\" "))
+		io.WriteString(fo, fmt.Sprintf("\n\t%v-> %v [label=\"%v\" ", each.from, each.to, each.label))
 		if "" != each.color {
-			io.WriteString(fo, fmt.Sprintf(",color=\"%v\" "))
+			io.WriteString(fo, fmt.Sprintf(",color=\"%v\" ", each.color))
 		}
-		io.WriteString(fo, fmt.Sprintf("]\n"))
+		io.WriteString(fo, fmt.Sprintf("]"))
 	}
 	io.WriteString(fo, "}")
-	return nil
 }
 
 func keyByValue(mss map[string]string, s string) string {

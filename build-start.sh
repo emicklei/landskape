@@ -1,6 +1,3 @@
-go fmt ...landskape && \
-go fmt ...model && \
-go fmt ...dao && \
-go fmt ...webservice && \
-go fmt ...application && \
+sh format-all.sh && \
+sh test-all.sh && \
 go run launcher.go $1 $2

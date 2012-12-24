@@ -19,7 +19,7 @@ func main() {
 	log.Print("[landskape] service startup...")
 	flag.Parse()
 	props, _ := readProperties(*propertiesFile)
-	session, _ := mgo.Dial(props["mongo.connection"])
+	session, _ := mgo.Dial(props["mongo.connection"]) // TODO error checking
 	defer session.Close()
 
 	appDao := dao.SystemDao{session.DB(props["mongo.database"]).C("systems")}
