@@ -29,14 +29,19 @@ func main() {
 	restful.Add(webservice.NewSystemService())
 	restful.Add(webservice.NewConnectionService())
 
+	// graphical diagrams
+	restful.Add(webservice.NewDiagramService())
+	webservice.DotConfig["binpath"] = props["dot.path"]
+	webservice.DotConfig["tmp"] = props["dot.tmp"]
+
 	// expose api using swagger
 	basePath := "http://" + props["http.server.host"] + ":" + props["http.server.port"]
 	config := restful.SwaggerConfig{
 		WebServicesUrl:  basePath,
-		ApiPath:         "/apidocs.json",
-		SwaggerPath:     "/apidocs/",
-		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7"}
-	restful.InstallSwaggerService(config)
+		ApiPath:         props["swagger.api"],
+		SwaggerPath:     props["swagger.path"],
+		SwaggerFilePath: props["swagger.home"]}
+	restful.InstallSwaggerService(config) // Add?
 
 	log.Printf("[landskape] ready to serve on %v\n", basePath)
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))

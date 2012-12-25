@@ -26,7 +26,6 @@ type System struct {
 	Scope      string
 	Id         string `bson:"_id"`
 	Attributes []Attribute
-	ParentId   string
 }
 
 func (self System) AttributeList() []Attribute { return self.Attributes }

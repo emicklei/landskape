@@ -22,7 +22,7 @@ type dotBuilder struct {
 	nodes map[string]string
 }
 
-func newDotBuilder() dotBuilder {
+func NewDotBuilder() dotBuilder {
 	builder := dotBuilder{}
 	builder.nodes = map[string]string{}
 	return builder
@@ -59,17 +59,17 @@ func (self *dotBuilder) BuildFromAll(connections []model.Connection) {
 	}
 }
 
-func (self dotBuilder) writeDotFile(output string) error {
+func (self dotBuilder) WriteDotFile(output string) error {
 	fo, err := os.Create(output)
 	if err != nil {
 		return err
 	}
 	defer fo.Close()
-	self.writeDot(fo)
+	self.WriteDot(fo)
 	return nil
 }
 
-func (self dotBuilder) writeDot(fo io.Writer) {
+func (self dotBuilder) WriteDot(fo io.Writer) {
 	io.WriteString(fo, "digraph {")
 	// nodes
 	usedNodeValues := map[string]bool{}

@@ -2,7 +2,7 @@ package webservice
 
 import (
 	"github.com/emicklei/go-restful"
-	"github.com/emicklei/hopwatch"
+	//	"github.com/emicklei/hopwatch"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/model"
 	"log"
@@ -50,7 +50,7 @@ func getFilteredConnections(req *restful.Request, resp *restful.Response) {
 		Tos:     asFilterParameter(req.QueryParameter("to")),
 		Types:   asFilterParameter(req.QueryParameter("type")),
 		Centers: asFilterParameter(req.QueryParameter("center"))}
-	hopwatch.Display("filter", filter)
+	// hopwatch.Display("filter", filter)
 	cons, err := application.SharedLogic.AllConnections(filter)
 	if err != nil {
 		logError("getFilteredConnections", err)

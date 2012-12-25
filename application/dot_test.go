@@ -7,7 +7,7 @@ import (
 
 func TestDotBuilderOneConnection(t *testing.T) {
 	c := []model.Connection{model.Connection{From: "A", To: "B", Type: "T"}}
-	b := newDotBuilder()
+	b := NewDotBuilder()
 	b.BuildFromAll(c)
-	b.writeDotFile("/tmp/TestDotBuilderOneConnection.dot")
+	b.WriteDotFile("/tmp/TestDotBuilderOneConnection.dot")
 }

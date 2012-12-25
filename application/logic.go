@@ -66,3 +66,18 @@ func (self Logic) SaveSystem(app *model.System) (*model.System, error) {
 	app.Modified = time.Now()
 	return app, self.SystemDao.Save(app)
 }
+
+func (self Logic) ChangeSystemId(scope, oldId, newId string) (*model.System, error) {
+	target, err := self.GetSystem(oldId)
+	if err != nil {
+		return nil, errors.New("No such system:" + oldId)
+	}
+	_, err = self.GetSystem(newId)
+	if err == nil {
+		return nil, errors.New("System already exists:" + newId)
+	}
+	newSystem := &model.System{Id: newId}
+	newSystem.Attributes = target.Attributes
+	newSystem.Scope = scope
+	return self.SaveSystem(newSystem)
+}
