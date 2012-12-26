@@ -42,8 +42,9 @@ func NewSystemService() *restful.WebService {
 }
 
 func deleteSystem(req *restful.Request, resp *restful.Response) {
+	scope := req.PathParameter("scope")
 	id := req.PathParameter("id")
-	err := application.SharedLogic.DeleteSystem(id)
+	err := application.SharedLogic.DeleteSystem(scope, id)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
@@ -51,8 +52,9 @@ func deleteSystem(req *restful.Request, resp *restful.Response) {
 }
 
 func getSystem(req *restful.Request, resp *restful.Response) {
+	scope := req.PathParameter("scope")
 	id := req.PathParameter("id")
-	app, err := application.SharedLogic.GetSystem(id)
+	app, err := application.SharedLogic.GetSystem(scope, id)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
@@ -61,7 +63,8 @@ func getSystem(req *restful.Request, resp *restful.Response) {
 }
 
 func getAllSystems(req *restful.Request, resp *restful.Response) {
-	apps, err := application.SharedLogic.AllSystems()
+	scope := req.PathParameter("scope")
+	apps, err := application.SharedLogic.AllSystems(scope)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
@@ -106,7 +109,7 @@ func putSystem(req *restful.Request, resp *restful.Response) {
 		resp.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	if application.SharedLogic.ExistsSystem(id) {
+	if application.SharedLogic.ExistsSystem(scope, id) {
 		err := restful.NewError(http.StatusConflict, "System already exists:"+id)
 		resp.WriteError(http.StatusConflict, err)
 		return

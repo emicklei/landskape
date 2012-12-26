@@ -28,12 +28,13 @@ func NewDiagramService() *restful.WebService {
 }
 
 func computeDiagram(req *restful.Request, resp *restful.Response) {
+	scope := req.PathParameter("scope")
 	filter := model.ConnectionsFilter{
 		Froms:   asFilterParameter(req.QueryParameter("from")),
 		Tos:     asFilterParameter(req.QueryParameter("to")),
 		Types:   asFilterParameter(req.QueryParameter("type")),
 		Centers: asFilterParameter(req.QueryParameter("center"))}
-	connections, err := application.SharedLogic.AllConnections(filter)
+	connections, err := application.SharedLogic.AllConnections(scope, filter)
 	if err != nil {
 		log.Printf("AllConnections failed:%v", err)
 		resp.WriteError(500, err)

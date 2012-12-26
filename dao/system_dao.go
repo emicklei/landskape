@@ -10,18 +10,18 @@ type SystemDao struct {
 	Collection *mgo.Collection
 }
 
-func (self SystemDao) Exists(id string) bool {
-	_, err := self.FindById(id)
+func (self SystemDao) Exists(scope, id string) bool {
+	_, err := self.FindById(scope, id)
 	return err == nil
 }
 
 func (self SystemDao) Save(app *model.System) error {
-	_, err := self.Collection.Upsert(bson.M{"_id": app.Id}, app) // ChangeInfo
+	_, err := self.Collection.Upsert(bson.M{"scope": app.Scope, "id": app.Id}, app) // ChangeInfo
 	return err
 }
 
-func (self SystemDao) FindAll() ([]model.System, error) {
-	query := bson.M{}
+func (self SystemDao) FindAll(scope string) ([]model.System, error) {
+	query := bson.M{"scope": scope}
 	result := []model.System{}
 	err := self.Collection.Find(query).All(&result)
 	if err != nil {
@@ -30,12 +30,13 @@ func (self SystemDao) FindAll() ([]model.System, error) {
 	return result, nil
 }
 
-func (self SystemDao) FindById(id string) (model.System, error) {
+func (self SystemDao) FindById(scope, id string) (model.System, error) {
+	query := bson.M{"id": id, "scope": scope}
 	result := model.System{}
-	err := self.Collection.FindId(id).One(&result)
+	err := self.Collection.Find(query).One(&result)
 	return result, err
 }
 
-func (self SystemDao) RemoveById(id string) error {
-	return self.Collection.Remove(bson.M{"_id": id})
+func (self SystemDao) RemoveById(scope, id string) error {
+	return self.Collection.Remove(bson.M{"scope": scope, "id": id})
 }

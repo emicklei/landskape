@@ -15,16 +15,16 @@ type Logic struct {
 	ConnectionDao dao.ConnectionDao
 }
 
-func (self Logic) AllSystems() (model.Systems, error) {
-	apps, err := self.SystemDao.FindAll()
+func (self Logic) AllSystems(scope string) (model.Systems, error) {
+	apps, err := self.SystemDao.FindAll(scope)
 	if err != nil {
 		return model.Systems{}, err
 	}
 	return model.Systems{apps}, nil
 }
 
-func (self Logic) AllConnections(filter model.ConnectionsFilter) (model.Connections, error) {
-	cons, err := self.ConnectionDao.FindAllMatching(filter)
+func (self Logic) AllConnections(scope string, filter model.ConnectionsFilter) (model.Connections, error) {
+	cons, err := self.ConnectionDao.FindAllMatching(scope, filter)
 	if err != nil {
 		return model.Connections{}, err
 	}
@@ -37,10 +37,10 @@ func (self Logic) DeleteConnection(con model.Connection) error {
 
 func (self Logic) SaveConnection(con model.Connection) error {
 	// Check from and to for existence
-	if con.From == "" || !self.ExistsSystem(con.From) {
+	if con.From == "" || !self.ExistsSystem(con.Scope, con.From) {
 		return errors.New("Invalid from (empty or non-exist):" + con.From)
 	}
-	if con.To == "" || !self.ExistsSystem(con.To) {
+	if con.To == "" || !self.ExistsSystem(con.Scope, con.To) {
 		return errors.New("Invalid to (empty or non-exist):" + con.To)
 	}
 	if con.Type == "" {
@@ -49,17 +49,17 @@ func (self Logic) SaveConnection(con model.Connection) error {
 	return self.ConnectionDao.Save(con)
 }
 
-func (self Logic) GetSystem(id string) (model.System, error) {
-	return self.SystemDao.FindById(id)
+func (self Logic) GetSystem(scope, id string) (model.System, error) {
+	return self.SystemDao.FindById(scope, id)
 }
 
-func (self Logic) DeleteSystem(id string) error {
+func (self Logic) DeleteSystem(scope, id string) error {
 	// TODO remove all its connections
-	return self.SystemDao.RemoveById(id)
+	return self.SystemDao.RemoveById(scope, id)
 }
 
-func (self Logic) ExistsSystem(id string) bool {
-	return self.SystemDao.Exists(id)
+func (self Logic) ExistsSystem(scope, id string) bool {
+	return self.SystemDao.Exists(scope, id)
 }
 
 func (self Logic) SaveSystem(app *model.System) (*model.System, error) {
@@ -68,16 +68,15 @@ func (self Logic) SaveSystem(app *model.System) (*model.System, error) {
 }
 
 func (self Logic) ChangeSystemId(scope, oldId, newId string) (*model.System, error) {
-	target, err := self.GetSystem(oldId)
+	target, err := self.GetSystem(scope, oldId)
 	if err != nil {
-		return nil, errors.New("No such system:" + oldId)
+		return nil, errors.New("No such system:" + oldId + " in scope:" + scope)
 	}
-	_, err = self.GetSystem(newId)
+	_, err = self.GetSystem(scope, newId)
 	if err == nil {
-		return nil, errors.New("System already exists:" + newId)
+		return nil, errors.New("System already exists:" + newId + " in scope:" + scope)
 	}
-	newSystem := &model.System{Id: newId}
+	newSystem := &model.System{Id: newId, Scope: scope}
 	newSystem.Attributes = target.Attributes
-	newSystem.Scope = scope
 	return self.SaveSystem(newSystem)
 }

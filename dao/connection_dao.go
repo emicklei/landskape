@@ -10,8 +10,8 @@ type ConnectionDao struct {
 	Collection *mgo.Collection
 }
 
-func (self ConnectionDao) FindAllMatching(filter model.ConnectionsFilter) ([]model.Connection, error) {
-	query := bson.M{}
+func (self ConnectionDao) FindAllMatching(scope string, filter model.ConnectionsFilter) ([]model.Connection, error) {
+	query := bson.M{"scope": scope}
 	if len(filter.Types) > 0 {
 		query["type"] = bson.M{"$in": filter.Types}
 	}
@@ -37,16 +37,16 @@ func (self ConnectionDao) FindAllMatching(filter model.ConnectionsFilter) ([]mod
 }
 
 func (self ConnectionDao) Save(con model.Connection) error {
-	query := bson.M{"from": con.From, "to": con.To, "type": con.Type}
+	query := bson.M{"scope": con.Scope, "from": con.From, "to": con.To, "type": con.Type}
 	_, err := self.Collection.Upsert(query, con) // ChangeInfo
 	return err
 }
 
 func (self ConnectionDao) Remove(con model.Connection) error {
-	query := bson.M{"from": con.From, "to": con.To, "type": con.Type}
+	query := bson.M{"scope": con.Scope, "from": con.From, "to": con.To, "type": con.Type}
 	return self.Collection.Remove(query)
 }
 
-func (self ConnectionDao) RemoveAllToOrFrom(toOrFrom string) error {
+func (self ConnectionDao) RemoveAllToOrFrom(scope, toOrFrom string) error {
 	return nil
 }
