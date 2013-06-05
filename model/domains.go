@@ -12,7 +12,7 @@ type AttributesHolder interface {
 	AttributeList() []Attribute
 }
 
-// Journal is to track who (or what System) 
+// Journal is to track who (or what System)
 // is responsible for the current state of the containing struct.
 type Journal struct {
 	Modified   time.Time
@@ -60,7 +60,7 @@ type Connection struct {
 func (self Connection) AttributeList() []Attribute { return self.Attributes }
 
 func (self Connection) Validate() error {
-	return nil // TODO	
+	return nil // TODO
 }
 
 // For querying connections ; each field can be single or comma separated of regular expressions

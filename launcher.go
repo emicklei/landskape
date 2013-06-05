@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/dmotylev/goproperties/src/goproperties"
 	"github.com/emicklei/go-restful"
+	"github.com/emicklei/go-restful/swagger"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/webservice"
@@ -26,7 +27,8 @@ func main() {
 	conDao := dao.ConnectionDao{session.DB(props["mongo.database"]).C("connections")}
 	application.SharedLogic = application.Logic{appDao, conDao}
 
-	restful.Add(webservice.NewSystemService())
+	webservice.SystemResource{application.SharedLogic}.Register()
+
 	restful.Add(webservice.NewConnectionService())
 
 	// graphical diagrams
@@ -36,12 +38,12 @@ func main() {
 
 	// expose api using swagger
 	basePath := "http://" + props["http.server.host"] + ":" + props["http.server.port"]
-	config := restful.SwaggerConfig{
+	config := swagger.Config{
 		WebServicesUrl:  basePath,
 		ApiPath:         props["swagger.api"],
 		SwaggerPath:     props["swagger.path"],
 		SwaggerFilePath: props["swagger.home"]}
-	restful.InstallSwaggerService(config) // Add?
+	swagger.InstallSwaggerService(config) // Add?
 
 	log.Printf("[landskape] ready to serve on %v\n", basePath)
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))
