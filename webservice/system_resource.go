@@ -126,6 +126,7 @@ func (s SystemResource) put(req *restful.Request, resp *restful.Response) {
 	_, err = s.Logic.SaveSystem(app)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
+                 return
 	}
 	resp.WriteHeader(http.StatusCreated)
 }
