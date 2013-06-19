@@ -28,8 +28,7 @@ func main() {
 	application.SharedLogic = application.Logic{appDao, conDao}
 
 	webservice.SystemResource{application.SharedLogic}.Register()
-
-	restful.Add(webservice.NewConnectionService())
+	webservice.ConnectionResource{application.SharedLogic}.Register()
 
 	// graphical diagrams
 	restful.Add(webservice.NewDiagramService())
@@ -42,8 +41,9 @@ func main() {
 		WebServicesUrl:  basePath,
 		ApiPath:         props["swagger.api"],
 		SwaggerPath:     props["swagger.path"],
-		SwaggerFilePath: props["swagger.home"]}
-	swagger.InstallSwaggerService(config) // Add?
+		SwaggerFilePath: props["swagger.home"],
+		WebServices:     restful.RegisteredWebServices()}
+	swagger.InstallSwaggerService(config)
 
 	log.Printf("[landskape] ready to serve on %v\n", basePath)
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))

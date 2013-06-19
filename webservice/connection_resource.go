@@ -10,7 +10,11 @@ import (
 	"strings"
 )
 
-func NewConnectionService() *restful.WebService {
+type ConnectionResource struct {
+	Logic application.Logic
+}
+
+func (c ConnectionResource) Register() {
 	ws := new(restful.WebService)
 	ws.Path("/{scope}/connections").
 		Param(ws.PathParameter("scope", "organization name to group system and connections")).
@@ -23,7 +27,7 @@ func NewConnectionService() *restful.WebService {
 		Param(ws.QueryParameter("to", "comma separated list of system ids")).
 		Param(ws.QueryParameter("type", "comma separated list of known connection types")).
 		Param(ws.QueryParameter("center", "comma separated list of system ids")).
-		To(getFilteredConnections).
+		To(c.getFiltered).
 		Writes(model.Connection{}))
 
 	ws.Route(ws.PUT("/from/{from}/to/{to}/type/{type}").
@@ -32,7 +36,7 @@ func NewConnectionService() *restful.WebService {
 		Param(ws.PathParameter("to", "system id")).
 		Param(ws.PathParameter("type", "indicate type of connection, e.g. http,jdbc,ftp,aq")).
 		Param(ws.QueryParameter("allowCreate", "if true then create any missing systems")).
-		To(putConnection).
+		To(c.put).
 		Reads(model.Connection{}))
 
 	ws.Route(ws.DELETE("/from/{from}/to/{to}/type/{type}").
@@ -40,11 +44,12 @@ func NewConnectionService() *restful.WebService {
 		Param(ws.PathParameter("from", "system id")).
 		Param(ws.PathParameter("to", "system id")).
 		Param(ws.PathParameter("type", "indicate type of connection, e.g. http,jdbc,ftp,aq")).
-		To(deleteConnection))
-	return ws
+		To(c.delete))
+
+	restful.Add(ws)
 }
 
-func getFilteredConnections(req *restful.Request, resp *restful.Response) {
+func (c *ConnectionResource) getFiltered(req *restful.Request, resp *restful.Response) {
 	scope := req.PathParameter("scope")
 	filter := model.ConnectionsFilter{
 		Froms:   asFilterParameter(req.QueryParameter("from")),
@@ -68,7 +73,7 @@ func asFilterParameter(param string) (list []string) {
 	return strings.Split(param, ",")
 }
 
-func putConnection(req *restful.Request, resp *restful.Response) {
+func (c *ConnectionResource) put(req *restful.Request, resp *restful.Response) {
 	connection := model.Connection{
 		Scope: req.PathParameter("scope"),
 		From:  req.PathParameter("from"),
@@ -87,7 +92,7 @@ func putConnection(req *restful.Request, resp *restful.Response) {
 	}
 }
 
-func deleteConnection(req *restful.Request, resp *restful.Response) {
+func (c *ConnectionResource) delete(req *restful.Request, resp *restful.Response) {
 	connection := model.Connection{
 		Scope: req.PathParameter("scope"),
 		From:  req.PathParameter("from"),

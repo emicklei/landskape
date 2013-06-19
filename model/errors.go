@@ -3,10 +3,10 @@ package model
 import "github.com/emicklei/hopwatch"
 
 func Debug(args ...interface{}) {
-	hopwatch.CallerOffset(2).Display(args...).Break()
+	hopwatch.CallerOffset(3).Display(args...).Break()
 }
 func Display(args ...interface{}) {
-	hopwatch.CallerOffset(2).Display(args...)
+	hopwatch.CallerOffset(3).Display(args...)
 }
 
 const (

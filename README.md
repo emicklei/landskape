@@ -32,4 +32,7 @@ Start
 
 	go run launcher.go
 
+
+![landskape api (swagger)](https://s3.amazonaws.com/public.philemonworks.com/landskape-api-swagger.png)
+
 (c) 2012, ernestmicklei.com. MIT License
