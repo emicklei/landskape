@@ -21,27 +21,37 @@ func (s SystemResource) Register() {
 	ws.Path("/{scope}/systems").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_XML, restful.MIME_JSON).
-		Param(ws.PathParameter("scope", "organization name to group system and connections"))
+		Param(ws.PathParameter("scope", "organization name to group system and connections").DataType("string"))
+
+	idParam := ws.PathParameter("id", "identifier of the system").DataType("string")
 
 	ws.Route(ws.GET("").To(s.getAll).
 		// docs
-		Doc("list all known systems"))
+		Doc("list all known systems").
+		Writes(model.System{})) // to the response ,TODO must be slice
+
 	ws.Route(ws.GET("/{id}").To(s.get).
 		// docs
 		Doc("get the system using its id").
-		Param(ws.PathParameter("id", "identifier of the system")))
+		Param(idParam).
+		Writes(model.System{})) // to the response
+
 	ws.Route(ws.PUT("/{id}").To(s.put).
 		// docs
 		Doc("create the system using its id").
-		Param(ws.PathParameter("id", "identifier of the system")))
+		Param(idParam).
+		Reads(model.System{})) // from the request
+
 	ws.Route(ws.POST("").To(s.post).
 		// docs
 		Doc("update the system using its id").
-		Param(ws.PathParameter("id", "identifier of the system")))
+		Param(idParam).
+		Reads(model.System{})) // from the request
+
 	ws.Route(ws.DELETE("/{id}").To(s.delete).
 		// docs
 		Doc("delete the system using its id").
-		Param(ws.PathParameter("id", "identifier of the system")))
+		Param(idParam))
 
 	restful.Add(ws)
 }
@@ -126,7 +136,7 @@ func (s SystemResource) put(req *restful.Request, resp *restful.Response) {
 	_, err = s.Logic.SaveSystem(app)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
-                 return
+		return
 	}
 	resp.WriteHeader(http.StatusCreated)
 }

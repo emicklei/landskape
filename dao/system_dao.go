@@ -31,7 +31,7 @@ func (self SystemDao) FindAll(scope string) ([]model.System, error) {
 }
 
 func (self SystemDao) FindById(scope, id string) (model.System, error) {
-	query := bson.M{"id": id, "scope": scope}
+	query := bson.M{"_id": id, "scope": scope}
 	result := model.System{}
 	err := self.Collection.Find(query).One(&result)
 	return result, err
