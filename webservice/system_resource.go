@@ -28,7 +28,7 @@ func (s SystemResource) Register() {
 	ws.Route(ws.GET("").To(s.getAll).
 		// docs
 		Doc("list all known systems").
-		Writes(model.System{})) // to the response ,TODO must be slice
+		Writes([]model.System{}))
 
 	ws.Route(ws.GET("/{id}").To(s.get).
 		// docs
@@ -92,7 +92,7 @@ func (s SystemResource) getAll(req *restful.Request, resp *restful.Response) {
 // POST /{scope}/systems/
 func (s SystemResource) post(req *restful.Request, resp *restful.Response) {
 	app := new(model.System)
-	err := req.ReadEntity(&app)
+	err := req.ReadEntity(app)
 	if err != nil {
 		resp.WriteError(http.StatusBadRequest, err)
 		return
@@ -113,7 +113,7 @@ func (s SystemResource) put(req *restful.Request, resp *restful.Response) {
 	scope := req.PathParameter("scope")
 	id := req.PathParameter("id")
 	app := new(model.System)
-	err := req.ReadEntity(&app)
+	err := req.ReadEntity(app)
 	if err != nil {
 		resp.WriteError(http.StatusBadRequest, err)
 		return

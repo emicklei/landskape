@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/dmotylev/goproperties/src/goproperties"
+	"github.com/dmotylev/goproperties"
 	"github.com/emicklei/go-restful"
 	"github.com/emicklei/go-restful/swagger"
 	"github.com/emicklei/landskape/application"
@@ -11,7 +11,6 @@ import (
 	"labix.org/v2/mgo"
 	"log"
 	"net/http"
-	"os"
 )
 
 var propertiesFile = flag.String("config", "landskape.properties", "the configuration file")
@@ -19,7 +18,7 @@ var propertiesFile = flag.String("config", "landskape.properties", "the configur
 func main() {
 	log.Print("[landskape] service startup...")
 	flag.Parse()
-	props, _ := readProperties(*propertiesFile)
+	props, _ := properties.Load(*propertiesFile)
 	session, _ := mgo.Dial(props["mongo.connection"]) // TODO error checking
 	defer session.Close()
 
@@ -47,13 +46,4 @@ func main() {
 
 	log.Printf("[landskape] ready to serve on %v\n", basePath)
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))
-}
-
-func readProperties(filename string) (map[string]string, error) {
-	f, err := os.Open(filename)
-	if err != nil {
-		log.Fatalf("failed to open %s: %s", filename, err)
-	}
-	defer f.Close()
-	return goproperties.Load(f)
 }

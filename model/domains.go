@@ -37,7 +37,7 @@ type Attribute struct {
 	Name, Value string
 }
 
-// AttributeValue finds the value of an attribute for a given name
+// AttributeValue finds the value of an attribute for a given name, return empty string if not found
 func AttributeValue(holder AttributesHolder, name string) string {
 	for _, each := range holder.AttributeList() {
 		if each.Name == name {
@@ -68,7 +68,7 @@ type ConnectionsFilter struct {
 	Froms, Tos, Types, Centers []string
 }
 
-// For querying Systems and connections ; each field can be a regular expression
+// For querying Systems and Connections ; each field can be a regular expression
 type AttributesFilter struct {
 	Name, Value string
 }
