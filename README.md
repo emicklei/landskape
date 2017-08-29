@@ -2,9 +2,10 @@
 
 ###Webservice to maintain and visualize connected systems
 
+# REWORK in progress !!!
+
 Requirements
 	  
-	Google Go 1.0.3+
 	MongoDB db version v2.2.0+     
 	Swagger-UI 1.1.7+
 
@@ -30,9 +31,9 @@ Flags
 	
 Start
 
-	go run launcher.go
+	go run main.go
 
 
 ![landskape api (swagger)](https://s3.amazonaws.com/public.philemonworks.com/landskape-api-swagger.png)
 
-(c) 2012, ernestmicklei.com. MIT License
+(c) 2012-2017, ernestmicklei.com. MIT License

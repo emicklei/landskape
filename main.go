@@ -2,15 +2,16 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net/http"
+
 	"github.com/dmotylev/goproperties"
 	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful/swagger"
+	"github.com/emicklei/go-restful-swagger12"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/webservice"
 	"labix.org/v2/mgo"
-	"log"
-	"net/http"
 )
 
 var propertiesFile = flag.String("config", "landskape.properties", "the configuration file")

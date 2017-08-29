@@ -1,12 +1,14 @@
 package model
 
-import "github.com/emicklei/hopwatch"
+import (
+	"log"
+)
 
 func Debug(args ...interface{}) {
-	hopwatch.CallerOffset(3).Display(args...).Break()
+	log.Println(args...)
 }
 func Display(args ...interface{}) {
-	hopwatch.CallerOffset(3).Display(args...)
+	log.Println(args...)
 }
 
 const (
