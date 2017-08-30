@@ -24,7 +24,8 @@ type Journal struct {
 type System struct {
 	Journal
 	Scope      string
-	Id         string `bson:"_id"`
+	DatabaseID int
+	Id         string
 	Attributes []Attribute
 }
 
@@ -53,6 +54,7 @@ func AttributeValue(holder AttributesHolder, name string) string {
 type Connection struct {
 	Journal
 	Scope          string
+	dbID           int
 	From, To, Type string
 	Attributes     []Attribute
 }

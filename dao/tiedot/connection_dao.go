@@ -6,7 +6,8 @@ import (
 )
 
 type ConnectionDao struct {
-	Collection *db.Col
+	Connections *db.Col
+	Systems     *db.Col
 }
 
 func (s ConnectionDao) FindAllMatching(scope string, filter model.ConnectionsFilter) ([]model.Connection, error) {

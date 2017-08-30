@@ -34,8 +34,11 @@ func main() {
 		log.Println("create connections failed ", err)
 	}
 
-	appDao := tiedot.SystemDao{tdb.Use("systems")}
-	conDao := tiedot.ConnectionDao{tdb.Use("connections")}
+	appDao := tiedot.SystemDao{Systems: tdb.Use("systems")}
+	conDao := tiedot.ConnectionDao{
+		Connections: tdb.Use("connections"),
+		Systems:     tdb.Use("systems"),
+	}
 	application.SharedLogic = application.Logic{appDao, conDao}
 
 	webservice.SystemResource{application.SharedLogic}.Register()
