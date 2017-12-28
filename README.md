@@ -1,39 +1,21 @@
-#Landskape
+# Landskape - maintain and visualize connected systems 
 
-###Webservice to maintain and visualize connected systems
-
-# REWORK in progress !!!
-
-Requirements
-	  
-	MongoDB db version v2.2.0+     
-	Swagger-UI 1.1.7+
-
-Installation
+### Installation
 
 		go get -u github.com/emicklei/landskape
 
-Configuration example
+### Run locally
 
-	mongo.connection=localhost:27017
-	mongo.database=landskape
-                     
-	http.server.host=localhost
-	http.server.port=9090     
-	                         
-	swagger.api=/apidocs.json
-    swagger.ui=/apidocs/
-	swagger.folder=/Users/emicklei/Downloads/swagger-ui-1.1.7
+    dev_appserver.py app.yaml
 
-Flags
+### Build
 
-		-config  the configuration file
-	
-Start
+To build the project locally and test it.
 
-	go run main.go
+	go get -u github.com/jteeuwen/go-bindata/...
 
+Make sure $GOPATH/bin is on your $PATH.
 
-![landskape api (swagger)](https://s3.amazonaws.com/public.philemonworks.com/landskape-api-swagger.png)
+	go generate
 
 (c) 2012-2017, ernestmicklei.com. MIT License

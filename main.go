@@ -2,19 +2,20 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/HouzuoGuo/tiedot/db"
 	"github.com/dmotylev/goproperties"
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/emicklei/go-restful"
 	restfulspec "github.com/emicklei/go-restful-openapi"
 	"github.com/emicklei/landskape/application"
-	"github.com/emicklei/landskape/dao/tiedot"
-	"github.com/emicklei/landskape/webservice"
+	"github.com/emicklei/landskape/dao/datastore"
+	"github.com/emicklei/landskape/rest"
 	"github.com/go-openapi/spec"
 )
+
+//go:generate go-bindata -pkg main swagger-ui/...
 
 var propertiesFile = flag.String("config", "landskape.properties", "the configuration file")
 
@@ -23,42 +24,30 @@ func main() {
 	flag.Parse()
 	props, _ := properties.Load(*propertiesFile)
 
-	tdb, err := db.OpenDB("./tiedot.db")
-	if err != nil {
-		log.Fatal("opendb failed", err)
-	}
-	if err := tdb.Create("systems"); err != nil {
-		log.Println("create systems failed ", err)
-	}
-	if err := tdb.Create("connections"); err != nil {
-		log.Println("create connections failed ", err)
-	}
-
-	appDao := tiedot.SystemDao{Systems: tdb.Use("systems")}
-	conDao := tiedot.ConnectionDao{
-		Connections: tdb.Use("connections"),
-		Systems:     tdb.Use("systems"),
-	}
+	appDao := datastore.SystemDao{}
+	conDao := datastore.ConnectionDao{}
 	application.SharedLogic = application.Logic{appDao, conDao}
 
-	webservice.SystemResource{application.SharedLogic}.Register()
-	webservice.ConnectionResource{application.SharedLogic}.Register()
+	rest.SystemResource{application.SharedLogic}.Register()
+	rest.ConnectionResource{application.SharedLogic}.Register()
 
 	// graphical diagrams
-	restful.Add(webservice.NewDiagramService())
-	webservice.DotConfig["binpath"] = props["dot.path"]
-	webservice.DotConfig["tmp"] = props["dot.tmp"]
+	restful.Add(rest.NewDiagramService())
+	rest.DotConfig["binpath"] = props["dot.path"]
+	rest.DotConfig["tmp"] = props["dot.tmp"]
 
 	// expose api using swagger
 	basePath := "http://" + props["http.server.host"] + ":" + props["http.server.port"]
 
 	config := restfulspec.Config{
-		WebServices:    restful.RegisteredWebServices(),
-		WebServicesURL: fmt.Sprintf("%s%s", basePath, props["swagger.path"]),
-		APIPath:        props["swagger.api"],
+		WebServices: restful.RegisteredWebServices(),
+		APIPath:     props["swagger.api"],
 		PostBuildSwaggerObjectHandler: enrichSwaggerObject}
 	restful.DefaultContainer.Add(restfulspec.NewOpenAPIService(config))
-	http.Handle("/doc/", http.StripPrefix("/doc/", http.FileServer(http.Dir("/Users/emicklei/xProjects/swagger-ui/dist"))))
+
+	// static file serving
+	swaggerUI := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, AssetInfo: AssetInfo, Prefix: "swagger-ui/dist"}
+	http.Handle("/swagger-ui/", http.StripPrefix("/swagger-ui/", http.FileServer(swaggerUI)))
 
 	log.Printf("[landskape] ready to serve on %v\n", basePath)
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))

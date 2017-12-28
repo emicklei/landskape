@@ -1,0 +1,13 @@
+service: landskape
+runtime: go
+api_version: go1
+
+env_variables:
+
+handlers:
+- url: /.*
+  script: _go_app
+
+- url: /internal/.*
+  login: admin
+  script: _go_app
