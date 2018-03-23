@@ -24,12 +24,12 @@ type Journal struct {
 type System struct {
 	Journal
 	Scope      string
-	DatabaseID int
-	Id         string
+	dbID       string
+	ID         string
 	Attributes []Attribute
 }
 
-func (self System) AttributeList() []Attribute { return self.Attributes }
+func (s System) AttributeList() []Attribute { return s.Attributes }
 
 // Attribute is a generic key-value pair of strings
 // Each attribute has its own lifecyle to track value changes
@@ -59,10 +59,12 @@ type Connection struct {
 	Attributes     []Attribute
 }
 
-func (self Connection) AttributeList() []Attribute { return self.Attributes }
-
-func (self Connection) Validate() error {
+func (c Connection) Validate() error {
 	return nil // TODO
+}
+
+func (c Connection) AttributeList() []Attribute {
+	return c.Attributes
 }
 
 // For querying connections ; each field can be single or comma separated of regular expressions

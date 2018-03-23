@@ -13,12 +13,17 @@ import (
 
 var DotConfig = map[string]string{}
 
-func NewDiagramService() *restful.WebService {
+type DiagramResource struct {
+	service application.Logic
+}
+
+func NewDiagramService(s application.Logic) *restful.WebService {
 	ws := new(restful.WebService)
+	d := DiagramResource{service: s}
 	ws.Path("/{scope}/diagram").
 		Param(ws.PathParameter("scope", "organization name to group system and connections")).
 		Produces("text/plain")
-	ws.Route(ws.GET("/").To(computeDiagram).
+	ws.Route(ws.GET("/").To(d.computeDiagram).
 		Doc(`Compute a graphical diagram with all (filtered) connections for all systems and the given scope`).
 		Param(ws.QueryParameter("from", "comma separated list of system ids")).
 		Param(ws.QueryParameter("to", "comma separated list of system ids")).
@@ -28,14 +33,15 @@ func NewDiagramService() *restful.WebService {
 	return ws
 }
 
-func computeDiagram(req *restful.Request, resp *restful.Response) {
+func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
 	scope := req.PathParameter("scope")
 	filter := model.ConnectionsFilter{
 		Froms:   asFilterParameter(req.QueryParameter("from")),
 		Tos:     asFilterParameter(req.QueryParameter("to")),
 		Types:   asFilterParameter(req.QueryParameter("type")),
 		Centers: asFilterParameter(req.QueryParameter("center"))}
-	connections, err := application.SharedLogic.AllConnections(scope, filter)
+	connections, err := d.service.AllConnections(ctx, scope, filter)
 	if err != nil {
 		log.Printf("AllConnections failed:%v", err)
 		resp.WriteError(500, err)

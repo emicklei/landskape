@@ -26,13 +26,13 @@ func main() {
 
 	appDao := datastore.SystemDao{}
 	conDao := datastore.ConnectionDao{}
-	application.SharedLogic = application.Logic{appDao, conDao}
+	service := application.Logic{appDao, conDao}
 
-	rest.SystemResource{application.SharedLogic}.Register()
-	rest.ConnectionResource{application.SharedLogic}.Register()
+	rest.NewSystemResource(service).Register()
+	rest.NewConnectionResource(service).Register()
 
 	// graphical diagrams
-	restful.Add(rest.NewDiagramService())
+	restful.Add(rest.NewDiagramService(service))
 	rest.DotConfig["binpath"] = props["dot.path"]
 	rest.DotConfig["tmp"] = props["dot.tmp"]
 

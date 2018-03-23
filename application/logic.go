@@ -1,82 +1,82 @@
 package application
 
 import (
+	"context"
 	"errors"
+
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/model"
 	//	"log"
 	"time"
 )
 
-var SharedLogic Logic
-
 type Logic struct {
 	SystemDao     dao.SystemDao
 	ConnectionDao dao.ConnectionDao
 }
 
-func (self Logic) AllSystems(scope string) (model.Systems, error) {
-	apps, err := self.SystemDao.FindAll(scope)
+func (l Logic) AllSystems(ctx context.Context, scope string) (model.Systems, error) {
+	apps, err := l.SystemDao.FindAll(ctx, scope)
 	if err != nil {
 		return model.Systems{}, err
 	}
 	return model.Systems{apps}, nil
 }
 
-func (self Logic) AllConnections(scope string, filter model.ConnectionsFilter) (model.Connections, error) {
-	cons, err := self.ConnectionDao.FindAllMatching(scope, filter)
+func (l Logic) AllConnections(ctx context.Context, scope string, filter model.ConnectionsFilter) (model.Connections, error) {
+	cons, err := l.ConnectionDao.FindAllMatching(ctx, scope, filter)
 	if err != nil {
 		return model.Connections{}, err
 	}
 	return model.Connections{cons}, nil
 }
 
-func (self Logic) DeleteConnection(con model.Connection) error {
-	return self.ConnectionDao.Remove(con)
+func (l Logic) DeleteConnection(ctx context.Context, con model.Connection) error {
+	return l.ConnectionDao.Remove(ctx, con)
 }
 
-func (self Logic) SaveConnection(con model.Connection) error {
+func (l Logic) SaveConnection(ctx context.Context, con model.Connection) error {
 	// Check from and to for existence
-	if con.From == "" || !self.ExistsSystem(con.Scope, con.From) {
+	if con.From == "" || !l.ExistsSystem(ctx, con.Scope, con.From) {
 		return errors.New("Invalid from (empty or non-exist):" + con.From)
 	}
-	if con.To == "" || !self.ExistsSystem(con.Scope, con.To) {
+	if con.To == "" || !l.ExistsSystem(ctx, con.Scope, con.To) {
 		return errors.New("Invalid to (empty or non-exist):" + con.To)
 	}
 	if con.Type == "" {
 		return errors.New("Invalid type (empty)")
 	}
-	return self.ConnectionDao.Save(con)
+	return l.ConnectionDao.Save(ctx, con)
 }
 
-func (self Logic) GetSystem(scope, id string) (model.System, error) {
-	return self.SystemDao.FindById(scope, id)
+func (l Logic) GetSystem(ctx context.Context, scope, id string) (model.System, error) {
+	return l.SystemDao.FindById(ctx, scope, id)
 }
 
-func (self Logic) DeleteSystem(scope, id string) error {
+func (l Logic) DeleteSystem(ctx context.Context, scope, id string) error {
 	// TODO remove all its connections
-	return self.SystemDao.RemoveById(scope, id)
+	return l.SystemDao.RemoveById(ctx, scope, id)
 }
 
-func (self Logic) ExistsSystem(scope, id string) bool {
-	return self.SystemDao.Exists(scope, id)
+func (l Logic) ExistsSystem(ctx context.Context, scope, id string) bool {
+	return l.SystemDao.Exists(ctx, scope, id)
 }
 
-func (self Logic) SaveSystem(app *model.System) (*model.System, error) {
+func (l Logic) SaveSystem(ctx context.Context, app *model.System) (*model.System, error) {
 	app.Modified = time.Now()
-	return app, self.SystemDao.Save(app)
+	return app, l.SystemDao.Save(ctx, app)
 }
 
-func (self Logic) ChangeSystemId(scope, oldId, newId string) (*model.System, error) {
-	target, err := self.GetSystem(scope, oldId)
+func (l Logic) ChangeSystemId(ctx context.Context, scope, oldId, newId string) (*model.System, error) {
+	target, err := l.GetSystem(ctx, scope, oldId)
 	if err != nil {
 		return nil, errors.New("No such system:" + oldId + " in scope:" + scope)
 	}
-	_, err = self.GetSystem(scope, newId)
+	_, err = l.GetSystem(ctx, scope, newId)
 	if err == nil {
 		return nil, errors.New("System already exists:" + newId + " in scope:" + scope)
 	}
-	newSystem := &model.System{Id: newId, Scope: scope}
+	newSystem := &model.System{ID: newId, Scope: scope}
 	newSystem.Attributes = target.Attributes
-	return self.SaveSystem(newSystem)
+	return l.SaveSystem(ctx, newSystem)
 }

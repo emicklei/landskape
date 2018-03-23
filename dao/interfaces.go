@@ -1,18 +1,22 @@
 package dao
 
-import "github.com/emicklei/landskape/model"
+import (
+	"context"
+
+	"github.com/emicklei/landskape/model"
+)
 
 type ConnectionDao interface {
-	FindAllMatching(scope string, filter model.ConnectionsFilter) ([]model.Connection, error)
-	Save(con model.Connection) error
-	Remove(con model.Connection) error
-	RemoveAllToOrFrom(scope, toOrFrom string) error
+	FindAllMatching(ctx context.Context, scope string, filter model.ConnectionsFilter) ([]model.Connection, error)
+	Save(ctx context.Context, con model.Connection) error
+	Remove(ctx context.Context, con model.Connection) error
+	RemoveAllToOrFrom(ctx context.Context, scope, toOrFrom string) error
 }
 
 type SystemDao interface {
-	Exists(scope, id string) bool
-	Save(app *model.System) error
-	FindAll(scope string) ([]model.System, error)
-	FindById(scope, id string) (model.System, error)
-	RemoveById(scope, id string) error
+	Exists(ctx context.Context, scope, id string) bool
+	Save(ctx context.Context, app *model.System) error
+	FindAll(ctx context.Context, scope string) ([]model.System, error)
+	FindById(ctx context.Context, scope, id string) (model.System, error)
+	RemoveById(ctx context.Context, scope, id string) error
 }

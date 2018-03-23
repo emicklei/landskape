@@ -14,7 +14,11 @@ const (
 )
 
 type SystemResource struct {
-	Logic application.Logic
+	service application.Logic
+}
+
+func NewSystemResource(s application.Logic) SystemResource {
+	return SystemResource{service: s}
 }
 
 func (s SystemResource) Register() {
@@ -59,9 +63,10 @@ func (s SystemResource) Register() {
 
 // DELETE /{scope}/systems/{id}
 func (s SystemResource) delete(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
 	scope := req.PathParameter("scope")
 	id := req.PathParameter("id")
-	err := s.Logic.DeleteSystem(scope, id)
+	err := s.service.DeleteSystem(ctx, scope, id)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
@@ -70,9 +75,10 @@ func (s SystemResource) delete(req *restful.Request, resp *restful.Response) {
 
 // GET /{scope}/systems/{id}
 func (s SystemResource) get(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
 	scope := req.PathParameter("scope")
 	id := req.PathParameter("id")
-	app, err := s.Logic.GetSystem(scope, id)
+	app, err := s.service.GetSystem(ctx, scope, id)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
@@ -81,8 +87,9 @@ func (s SystemResource) get(req *restful.Request, resp *restful.Response) {
 }
 
 func (s SystemResource) getAll(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
 	scope := req.PathParameter("scope")
-	apps, err := s.Logic.AllSystems(scope)
+	apps, err := s.service.AllSystems(ctx, scope)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
@@ -92,18 +99,19 @@ func (s SystemResource) getAll(req *restful.Request, resp *restful.Response) {
 
 // POST /{scope}/systems/
 func (s SystemResource) post(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
 	app := new(model.System)
 	err := req.ReadEntity(app)
 	if err != nil {
 		resp.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	if app.Id == "" {
+	if len(app.ID) == 0 {
 		err := restful.NewError(model.MISMATCH_ID, "Id is missing")
 		resp.WriteServiceError(http.StatusBadRequest, err)
 		return
 	}
-	_, err = s.Logic.SaveSystem(app)
+	_, err = s.service.SaveSystem(ctx, app)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 	}
@@ -111,6 +119,7 @@ func (s SystemResource) post(req *restful.Request, resp *restful.Response) {
 
 // PUT /{scope}/systems/{id}
 func (s SystemResource) put(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
 	scope := req.PathParameter("scope")
 	id := req.PathParameter("id")
 	app := new(model.System)
@@ -119,8 +128,8 @@ func (s SystemResource) put(req *restful.Request, resp *restful.Response) {
 		resp.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	if app.Id != id {
-		err := restful.NewError(model.MISMATCH_ID, fmt.Sprintf("Id mismatch: %v != %v", app.Id, id))
+	if app.ID != id {
+		err := restful.NewError(model.MISMATCH_ID, fmt.Sprintf("Id mismatch: %v != %v", app.ID, id))
 		resp.WriteServiceError(http.StatusBadRequest, err)
 		return
 	}
@@ -129,12 +138,12 @@ func (s SystemResource) put(req *restful.Request, resp *restful.Response) {
 		resp.WriteServiceError(http.StatusBadRequest, err)
 		return
 	}
-	if s.Logic.ExistsSystem(scope, id) {
+	if s.service.ExistsSystem(ctx, scope, id) {
 		err := restful.NewError(http.StatusConflict, "System already exists:"+id)
 		resp.WriteServiceError(http.StatusConflict, err)
 		return
 	}
-	_, err = s.Logic.SaveSystem(app)
+	_, err = s.service.SaveSystem(ctx, app)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 		return

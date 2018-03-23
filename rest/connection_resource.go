@@ -12,7 +12,11 @@ import (
 )
 
 type ConnectionResource struct {
-	Logic application.Logic
+	service application.Logic
+}
+
+func NewConnectionResource(s application.Logic) ConnectionResource {
+	return ConnectionResource{service: s}
 }
 
 func (c ConnectionResource) Register() {
@@ -56,6 +60,7 @@ func (c ConnectionResource) Register() {
 }
 
 func (c *ConnectionResource) getFiltered(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
 	scope := req.PathParameter("scope")
 	filter := model.ConnectionsFilter{
 		Froms:   asFilterParameter(req.QueryParameter("from")),
@@ -63,7 +68,7 @@ func (c *ConnectionResource) getFiltered(req *restful.Request, resp *restful.Res
 		Types:   asFilterParameter(req.QueryParameter("type")),
 		Centers: asFilterParameter(req.QueryParameter("center"))}
 	// hopwatch.Display("filter", filter)
-	cons, err := application.SharedLogic.AllConnections(scope, filter)
+	cons, err := c.service.AllConnections(ctx, scope, filter)
 	if err != nil {
 		logError("getFilteredConnections", err)
 		resp.WriteError(http.StatusInternalServerError, err)
@@ -80,6 +85,7 @@ func asFilterParameter(param string) (list []string) {
 }
 
 func (c *ConnectionResource) put(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
 	connection := model.Connection{
 		Scope: req.PathParameter("scope"),
 		From:  req.PathParameter("from"),
@@ -90,7 +96,7 @@ func (c *ConnectionResource) put(req *restful.Request, resp *restful.Response) {
 		resp.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	err := application.SharedLogic.SaveConnection(connection)
+	err := c.service.SaveConnection(ctx, connection)
 	if err != nil {
 		logError("putConnection", err)
 		resp.WriteError(http.StatusInternalServerError, err)
@@ -99,6 +105,7 @@ func (c *ConnectionResource) put(req *restful.Request, resp *restful.Response) {
 }
 
 func (c *ConnectionResource) delete(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
 	connection := model.Connection{
 		Scope: req.PathParameter("scope"),
 		From:  req.PathParameter("from"),
@@ -109,7 +116,7 @@ func (c *ConnectionResource) delete(req *restful.Request, resp *restful.Response
 		resp.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	err := application.SharedLogic.DeleteConnection(connection)
+	err := c.service.DeleteConnection(ctx, connection)
 	if err != nil {
 		logError("deleteConnection", err)
 		resp.WriteError(http.StatusInternalServerError, err)
