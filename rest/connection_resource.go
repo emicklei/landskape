@@ -25,8 +25,8 @@ func (c ConnectionResource) Register() {
 
 	ws.Path("/{scope}/connections").
 		Param(ws.PathParameter("scope", "organization name to group system and connections")).
-		Consumes(restful.MIME_XML).
-		Produces(restful.MIME_XML)
+		Consumes(restful.MIME_JSON).
+		Produces(restful.MIME_JSON)
 
 	ws.Route(ws.GET("/").
 		Doc(`Get all (filtered) connections for all systems and the given scope`).

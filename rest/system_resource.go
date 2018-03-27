@@ -24,8 +24,8 @@ func NewSystemResource(s application.Logic) SystemResource {
 func (s SystemResource) Register() {
 	ws := new(restful.WebService)
 	ws.Path("/{scope}/systems").
-		Consumes(restful.MIME_XML, restful.MIME_JSON).
-		Produces(restful.MIME_XML, restful.MIME_JSON).
+		Consumes(restful.MIME_JSON).
+		Produces(restful.MIME_JSON).
 		Param(ws.PathParameter("scope", "organization name to group system and connections").DataType("string"))
 
 	idParam := ws.PathParameter("id", "identifier of the system").DataType("string")

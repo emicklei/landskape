@@ -23,8 +23,8 @@ type Journal struct {
 // Examples are: Webservice, Database schema, Ftp server, Third party solution
 type System struct {
 	Journal
+	dbID       string `json:"-"`
 	Scope      string
-	dbID       string
 	ID         string
 	Attributes []Attribute
 }
@@ -53,8 +53,8 @@ func AttributeValue(holder AttributesHolder, name string) string {
 // Example of Type are:  http, https, aq, jdbc, ftp, smtp
 type Connection struct {
 	Journal
+	dbID           string `json:"-"`
 	Scope          string
-	dbID           int
 	From, To, Type string
 	Attributes     []Attribute
 }

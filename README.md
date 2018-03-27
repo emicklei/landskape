@@ -8,6 +8,10 @@
 
     dev_appserver.py app.yaml
 
+Swagger
+
+	http://localhost:8888/swagger-ui/?url=http://localhost:8888/api-docs.json
+
 ### Build
 
 To build the project locally and test it.
