@@ -23,9 +23,7 @@ func (c ConnectionResource) Register() {
 	ws := new(restful.WebService)
 	tags := []string{"connections"}
 
-	ws.Path("/{scope}/connections").
-		Param(ws.PathParameter("scope", "organization name to group system and connections")).
-		Consumes(restful.MIME_JSON).
+	ws.Path("/connections").
 		Produces(restful.MIME_JSON)
 
 	ws.Route(ws.GET("/").
@@ -45,8 +43,7 @@ func (c ConnectionResource) Register() {
 		Param(ws.PathParameter("to", "system id")).
 		Param(ws.PathParameter("type", "indicate type of connection, e.g. http,jdbc,ftp,aq")).
 		Param(ws.QueryParameter("allowCreate", "if true then create any missing systems")).
-		To(c.put).
-		Reads(model.Connection{}))
+		To(c.put))
 
 	ws.Route(ws.DELETE("/from/{from}/to/{to}/type/{type}").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -61,14 +58,13 @@ func (c ConnectionResource) Register() {
 
 func (c *ConnectionResource) getFiltered(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
-	scope := req.PathParameter("scope")
 	filter := model.ConnectionsFilter{
 		Froms:   asFilterParameter(req.QueryParameter("from")),
 		Tos:     asFilterParameter(req.QueryParameter("to")),
 		Types:   asFilterParameter(req.QueryParameter("type")),
 		Centers: asFilterParameter(req.QueryParameter("center"))}
 	// hopwatch.Display("filter", filter)
-	cons, err := c.service.AllConnections(ctx, scope, filter)
+	cons, err := c.service.AllConnections(ctx, filter)
 	if err != nil {
 		logError("getFilteredConnections", err)
 		resp.WriteError(http.StatusInternalServerError, err)
@@ -87,30 +83,29 @@ func asFilterParameter(param string) (list []string) {
 func (c *ConnectionResource) put(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
 	connection := model.Connection{
-		Scope: req.PathParameter("scope"),
-		From:  req.PathParameter("from"),
-		To:    req.PathParameter("to"),
-		Type:  req.PathParameter("type")}
+		From: req.PathParameter("from"),
+		To:   req.PathParameter("to"),
+		Type: req.PathParameter("type")}
 	if err := connection.Validate(); err != nil {
 		logError("putConnection", err)
 		resp.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	err := c.service.SaveConnection(ctx, connection)
+	err := c.service.SaveConnection(ctx, connection, req.QueryParameter("allowCreate") == "true")
 	if err != nil {
 		logError("putConnection", err)
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
 	}
+	resp.WriteHeader(201)
 }
 
 func (c *ConnectionResource) delete(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
 	connection := model.Connection{
-		Scope: req.PathParameter("scope"),
-		From:  req.PathParameter("from"),
-		To:    req.PathParameter("to"),
-		Type:  req.PathParameter("type")}
+		From: req.PathParameter("from"),
+		To:   req.PathParameter("to"),
+		Type: req.PathParameter("type")}
 	if err := connection.Validate(); err != nil {
 		logError("deleteConnection", err)
 		resp.WriteError(http.StatusBadRequest, err)
@@ -122,6 +117,7 @@ func (c *ConnectionResource) delete(req *restful.Request, resp *restful.Response
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
 	}
+	resp.WriteHeader(201)
 }
 
 func logError(operation string, err error) {

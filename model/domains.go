@@ -23,8 +23,6 @@ type Journal struct {
 // Examples are: Webservice, Database schema, Ftp server, Third party solution
 type System struct {
 	Journal
-	dbID       string `json:"-"`
-	Scope      string
 	ID         string
 	Attributes []Attribute
 }
@@ -53,8 +51,6 @@ func AttributeValue(holder AttributesHolder, name string) string {
 // Example of Type are:  http, https, aq, jdbc, ftp, smtp
 type Connection struct {
 	Journal
-	dbID           string `json:"-"`
-	Scope          string
 	From, To, Type string
 	Attributes     []Attribute
 }
@@ -65,6 +61,10 @@ func (c Connection) Validate() error {
 
 func (c Connection) AttributeList() []Attribute {
 	return c.Attributes
+}
+
+func (c Connection) ID() string {
+	return c.From + "_" + c.Type + "_" + c.To
 }
 
 // For querying connections ; each field can be single or comma separated of regular expressions

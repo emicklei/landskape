@@ -1,19 +1,24 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
+	"os"
 
+	"cloud.google.com/go/datastore"
 	"github.com/dmotylev/goproperties"
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/emicklei/go-restful"
 	restfulspec "github.com/emicklei/go-restful-openapi"
 	"github.com/emicklei/landskape/application"
-	"github.com/emicklei/landskape/dao/datastore"
+	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/rest"
 	"github.com/go-openapi/spec"
 )
+
+// GOOGLE_CLOUD_PROJECT=kramphub-toolshed-shared go run main *.go
 
 //go:generate go-bindata -pkg main swagger-ui/...
 
@@ -24,8 +29,14 @@ func main() {
 	flag.Parse()
 	props, _ := properties.Load(*propertiesFile)
 
-	appDao := datastore.SystemDao{}
-	conDao := datastore.ConnectionDao{}
+	// prepare datastore
+	ds, err := datastore.NewClient(context.Background(), os.Getenv("GOOGLE_CLOUD_PROJECT"))
+	if err != nil {
+		log.Fatal("datastore client creation failed", err)
+	}
+
+	appDao := dao.NewSystemDao(ds)
+	conDao := dao.NewConnectionDao(ds)
 	service := application.Logic{appDao, conDao}
 
 	rest.NewSystemResource(service).Register()

@@ -20,8 +20,7 @@ type DiagramResource struct {
 func NewDiagramService(s application.Logic) *restful.WebService {
 	ws := new(restful.WebService)
 	d := DiagramResource{service: s}
-	ws.Path("/{scope}/diagram").
-		Param(ws.PathParameter("scope", "organization name to group system and connections")).
+	ws.Path("/diagram").
 		Produces("text/plain")
 	ws.Route(ws.GET("/").To(d.computeDiagram).
 		Doc(`Compute a graphical diagram with all (filtered) connections for all systems and the given scope`).
@@ -35,13 +34,12 @@ func NewDiagramService(s application.Logic) *restful.WebService {
 
 func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
-	scope := req.PathParameter("scope")
 	filter := model.ConnectionsFilter{
 		Froms:   asFilterParameter(req.QueryParameter("from")),
 		Tos:     asFilterParameter(req.QueryParameter("to")),
 		Types:   asFilterParameter(req.QueryParameter("type")),
 		Centers: asFilterParameter(req.QueryParameter("center"))}
-	connections, err := d.service.AllConnections(ctx, scope, filter)
+	connections, err := d.service.AllConnections(ctx, filter)
 	if err != nil {
 		log.Printf("AllConnections failed:%v", err)
 		resp.WriteError(500, err)

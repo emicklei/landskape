@@ -16,9 +16,23 @@ type System struct {
 func main() {
 	t := forest.TestingT
 	system := System{ID: "sysA"}
-	resp := api.POST(t, forest.NewConfig("/{scope}/systems", "test").Content(system, "application/json"))
+	resp := api.POST(t, forest.NewConfig("/systems").Content(system, "application/json"))
 	forest.Dump(t, resp)
 
-	resp = api.GET(t, forest.NewConfig("/{scope}/systems", "test").Header("Accept", "application/json"))
+	{
+		system := System{ID: "sysB"}
+		resp := api.POST(t, forest.NewConfig("/systems").Content(system, "application/json"))
+		forest.Dump(t, resp)
+	}
+
+	{
+		resp := api.PUT(t, forest.NewConfig("/connections/from/{from}/to/{to}/type/{type}",
+			"sysA",
+			"sysB",
+			"jdbc"))
+		forest.Dump(t, resp)
+	}
+
+	resp = api.GET(t, forest.NewConfig("/systems").Header("Accept", "application/json"))
 	forest.Dump(t, resp)
 }
