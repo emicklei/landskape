@@ -29,6 +29,32 @@ type System struct {
 
 func (s System) AttributeList() []Attribute { return s.Attributes }
 
+func (s *System) SetAttribute(name, value string) {
+	if len(name) == 0 {
+		return
+	}
+	if len(value) == 0 {
+		// remove it
+		without := []Attribute{}
+		for _, each := range s.Attributes {
+			if each.Name != name {
+				without = append(without, each)
+			}
+		}
+		s.Attributes = without
+		return
+	}
+	// replace or add
+	for _, each := range s.Attributes {
+		if each.Name == name {
+			each.Value = value
+			return
+		}
+	}
+	// not found, add it
+	s.Attributes = append(s.Attributes, Attribute{Name: name, Value: value})
+}
+
 // Attribute is a generic key-value pair of strings
 // Each attribute has its own lifecyle to track value changes
 type Attribute struct {

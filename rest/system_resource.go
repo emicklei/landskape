@@ -64,7 +64,39 @@ func (s SystemResource) Register() {
 		Doc("delete the system using its id").
 		Param(idParam))
 
+	ws.Route(ws.PUT("/{id}/attributes").To(s.setAttribute).
+		Param(idParam).
+		Param(ws.QueryParameter("name", "name of the attribute. specials = {ui-label,ui-color}")).
+		Param(ws.QueryParameter("value", "value of the attribute")).
+		// docs
+		Doc("set an attribute value").
+		Metadata(restfulspec.KeyOpenAPITags, tags))
+
 	restful.Add(ws)
+}
+
+// DELETE /systems/{id}
+func (s SystemResource) setAttribute(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
+	id := req.PathParameter("id")
+	name := req.QueryParameter("name")
+	if len(name) == 0 {
+		resp.WriteErrorString(400, "name cannot be empty")
+		return
+	}
+	value := req.QueryParameter("value")
+	app, err := s.service.GetSystem(ctx, id)
+	if err != nil {
+		resp.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	papp := &app // TODO
+	papp.SetAttribute(name, value)
+	_, err = s.service.SaveSystem(ctx, papp)
+	if err != nil {
+		resp.WriteError(http.StatusInternalServerError, err)
+	}
+	resp.WriteEntity(papp)
 }
 
 // DELETE /systems/{id}

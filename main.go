@@ -18,8 +18,6 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// GOOGLE_CLOUD_PROJECT=kramphub-toolshed-shared go run main *.go
-
 //go:generate go-bindata -pkg main swagger-ui/...
 
 var propertiesFile = flag.String("config", "landskape.properties", "the configuration file")
