@@ -28,7 +28,39 @@ func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilte
 	if err != nil {
 		return model.Connections{}, err
 	}
-	return model.Connections{cons}, nil
+	sys := map[string]model.System{}
+	// populate all systems, sequential for now
+	resolved := []model.Connection{}
+	for _, each := range cons {
+		other := model.Connection{
+			Journal:    each.Journal,
+			To:         each.To,
+			From:       each.From,
+			Attributes: each.Attributes,
+		}
+		from, ok := sys[each.From]
+		if !ok {
+			s, err := l.GetSystem(ctx, each.From)
+			if err != nil {
+				return model.Connections{}, err
+			}
+			from = s
+			sys[each.From] = from
+		}
+		other.FromSystem = from
+		to, ok := sys[each.To]
+		if !ok {
+			s, err := l.GetSystem(ctx, each.To)
+			if err != nil {
+				return model.Connections{}, err
+			}
+			to = s
+			sys[each.To] = to
+		}
+		other.ToSystem = to
+		resolved = append(resolved, other)
+	}
+	return model.Connections{resolved}, nil
 }
 
 func (l Logic) DeleteConnection(ctx context.Context, con model.Connection) error {

@@ -77,8 +77,11 @@ func AttributeValue(holder AttributesHolder, name string) string {
 // Example of Type are:  http, https, aq, jdbc, ftp, smtp
 type Connection struct {
 	Journal
-	From, To, Type string
-	Attributes     []Attribute
+	From, To   string
+	Type       string
+	Attributes []Attribute
+	// populated
+	FromSystem, ToSystem System
 }
 
 func (c Connection) Validate() error {
@@ -104,7 +107,7 @@ type AttributesFilter struct {
 }
 
 // Systems is a container of System for XML/JSON export
-type Systems struct{ System []System }
+type Systems struct{ List []System }
 
 // Connections is a container of System for XML/JSON export
-type Connections struct{ Connection []Connection }
+type Connections struct{ List []Connection }

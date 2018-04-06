@@ -58,6 +58,7 @@ func main() {
 	swaggerUI := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, AssetInfo: AssetInfo, Prefix: "swagger-ui/dist"}
 	http.Handle("/swagger-ui/", http.StripPrefix("/swagger-ui/", http.FileServer(swaggerUI)))
 
+	log.Println("[landskape] Swagger http://localhost:8888/swagger-ui/?url=http://localhost:8888/api-docs.json")
 	log.Printf("[landskape] ready to serve on %v\n", basePath)
 	log.Fatal(http.ListenAndServe(":"+props["http.server.port"], nil))
 }

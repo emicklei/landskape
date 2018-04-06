@@ -2,10 +2,13 @@ package application
 
 import (
 	"fmt"
-	"github.com/emicklei/landskape/model"
-	"io"
+	"log"
 	"os"
 	"strings"
+
+	"github.com/emicklei/dot"
+
+	"github.com/emicklei/landskape/model"
 )
 
 const (
@@ -20,93 +23,74 @@ type edge struct {
 type dotBuilder struct {
 	edges []edge
 	nodes map[string]string
+	graph *dot.Graph
 }
 
 func NewDotBuilder() dotBuilder {
 	builder := dotBuilder{}
 	builder.nodes = map[string]string{}
+	builder.graph = dot.NewDigraph()
 	return builder
 }
 
-func (self edge) String() string {
-	return fmt.Sprintf("%v -> (%v,%v) -> %v", self.from, self.label, self.color, self.to)
+func (e edge) String() string {
+	return fmt.Sprintf("%v -> (%v,%v) -> %v", e.from, e.label, e.color, e.to)
 }
 
 // BuildFromAll composes the edges and nodes from a collection of Connection
-func (self *dotBuilder) BuildFromAll(connections []model.Connection) {
+func (e *dotBuilder) BuildFromAll(connections []model.Connection) {
 	for _, each := range connections {
-		edge := edge{}
-		edge.from = labelForNodeIn(each.From, self.nodes)
-		edge.to = labelForNodeIn(each.To, self.nodes)
-		labelOrEmpty := model.AttributeValue(each, UI_LABEL)
-		if "" != labelOrEmpty {
-			// detect reference to other attribute
-			if strings.HasPrefix("@", labelOrEmpty) {
-				referencedLabel := model.AttributeValue(each, labelOrEmpty[1:])
-				if "" != referencedLabel {
-					edge.label = referencedLabel
-				} else {
-					edge.label = labelOrEmpty
-				}
-			} else {
-				edge.label = labelOrEmpty
-			}
-		} else {
-			edge.label = each.Type
+		if len(each.FromSystem.ID) == 0 {
+			log.Printf("%#v", each)
+			panic("jammer")
 		}
-		edge.color = colorForLabel(edge.label, model.AttributeValue(each, UI_COLOR))
-		self.edges = append(self.edges, edge)
+		from := e.graph.Node(each.FromSystem.ID)
+		setUIAttributesForSystem(from.AttributesMap, each.FromSystem)
+		to := e.graph.Node(each.ToSystem.ID)
+		setUIAttributesForSystem(to.AttributesMap, each.ToSystem)
+		edge := e.graph.Edge(from, to)
+		setUIAttributesForConnection(edge.AttributesMap, each)
 	}
 }
 
-func (self dotBuilder) WriteDotFile(output string) error {
+func setUIAttributesForSystem(a dot.AttributesMap, s model.System) {
+	a.Attr("label", s.ID) // can be overwritten is ui-label was set
+	a.Attr("color", colorForLabel(s.ID))
+	for _, each := range s.Attributes {
+		if strings.HasPrefix(each.Name, "ui-") {
+			key := each.Name[3:]
+			if len(each.Value) > 0 {
+				a.Attr(key, each.Value)
+			}
+		}
+	}
+}
+
+func setUIAttributesForConnection(a dot.AttributesMap, c model.Connection) {
+	a.Attr("label", c.Type) // can be overwritten is ui-label was set
+	a.Attr("color", colorForLabel(c.Type))
+	for _, each := range c.Attributes {
+		if strings.HasPrefix(each.Name, "ui-") {
+			key := each.Name[3:]
+			if len(each.Value) > 0 {
+				a.Attr(key, each.Value)
+			}
+		}
+	}
+}
+
+func (e dotBuilder) WriteDotFile(output string) error {
+	log.Println(e.graph.String())
 	fo, err := os.Create(output)
 	if err != nil {
 		return err
 	}
 	defer fo.Close()
-	self.WriteDot(fo)
+	e.graph.Write(fo)
 	return nil
 }
 
-func (self dotBuilder) WriteDot(fo io.Writer) {
-	io.WriteString(fo, "digraph {")
-	// nodes
-	usedNodeValues := map[string]bool{}
-	for _, each := range self.edges {
-		usedNodeValues[each.to] = true
-		usedNodeValues[each.from] = true
-	}
-	for each, ok := range usedNodeValues {
-		if ok {
-			nodeName := keyByValue(self.nodes, each)
-			io.WriteString(fo, fmt.Sprintf("\n\t%v [label=\"%v\"]", each, nodeName))
-		}
-	}
-	// edges
-	for _, each := range self.edges {
-		io.WriteString(fo, fmt.Sprintf("\n\t%v-> %v [label=\"%v\" ", each.from, each.to, each.label))
-		if "" != each.color {
-			io.WriteString(fo, fmt.Sprintf(",color=\"%v\" ", each.color))
-		}
-		io.WriteString(fo, fmt.Sprintf("]"))
-	}
-	io.WriteString(fo, "}")
-}
-
-func keyByValue(mss map[string]string, s string) string {
-	for key, value := range mss {
-		if value == s {
-			return key
-		}
-	}
-	return ""
-}
-
-func colorForLabel(label, uicolor string) string {
-	if uicolor != "" {
-		return fmt.Sprintf("#%v", uicolor)
-	}
+func colorForLabel(label string) string {
 	switch {
 	case label == "jdbc":
 		return "#E01BD0"
@@ -118,14 +102,5 @@ func colorForLabel(label, uicolor string) string {
 		return "#EDB845"
 
 	}
-	return ""
-}
-
-func labelForNodeIn(id string, nodes map[string]string) string {
-	label := nodes[id]
-	if label == "" {
-		label = fmt.Sprintf("n%v", len(nodes))
-		nodes[id] = label
-	}
-	return label
+	return "#222"
 }
