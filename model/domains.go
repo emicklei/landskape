@@ -29,6 +29,10 @@ type System struct {
 
 func (s System) AttributeList() []Attribute { return s.Attributes }
 
+func (s *System) DeleteAttribute(name string) {
+	s.SetAttribute(name, "")
+}
+
 func (s *System) SetAttribute(name, value string) {
 	if len(name) == 0 {
 		return

@@ -39,15 +39,22 @@ func (e edge) String() string {
 
 // BuildFromAll composes the edges and nodes from a collection of Connection
 func (e *dotBuilder) BuildFromAll(connections []model.Connection) {
+	hasAttributesSet := map[string]bool{}
 	for _, each := range connections {
 		if len(each.FromSystem.ID) == 0 {
 			log.Printf("%#v", each)
 			panic("jammer")
 		}
 		from := e.graph.Node(each.FromSystem.ID)
-		setUIAttributesForSystem(from.AttributesMap, each.FromSystem)
+		if hasSet, ok := hasAttributesSet[each.FromSystem.ID]; !hasSet || !ok {
+			hasAttributesSet[each.FromSystem.ID] = true
+			setUIAttributesForSystem(from.AttributesMap, each.FromSystem)
+		}
 		to := e.graph.Node(each.ToSystem.ID)
-		setUIAttributesForSystem(to.AttributesMap, each.ToSystem)
+		if hasSet, ok := hasAttributesSet[each.ToSystem.ID]; !hasSet || !ok {
+			hasAttributesSet[each.ToSystem.ID] = true
+			setUIAttributesForSystem(to.AttributesMap, each.ToSystem)
+		}
 		edge := e.graph.Edge(from, to)
 		setUIAttributesForConnection(edge.AttributesMap, each)
 	}

@@ -72,10 +72,37 @@ func (s SystemResource) Register() {
 		Doc("set an attribute value").
 		Metadata(restfulspec.KeyOpenAPITags, tags))
 
+	ws.Route(ws.DELETE("/{id}/attributes").To(s.deleteAttribute).
+		Param(idParam).
+		Param(ws.QueryParameter("name", "name of the attribute. specials = {ui-label,ui-color}")).
+		// docs
+		Doc("set an attribute value").
+		Metadata(restfulspec.KeyOpenAPITags, tags))
+
 	restful.Add(ws)
 }
 
-// DELETE /systems/{id}
+func (s SystemResource) deleteAttribute(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
+	id := req.PathParameter("id")
+	name := req.QueryParameter("name")
+	if len(name) == 0 {
+		resp.WriteErrorString(400, "name cannot be empty")
+		return
+	}
+	app, err := s.service.GetSystem(ctx, id)
+	if err != nil {
+		resp.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	papp := &app // TODO
+	papp.DeleteAttribute(name)
+	_, err = s.service.SaveSystem(ctx, papp)
+	if err != nil {
+		resp.WriteError(http.StatusInternalServerError, err)
+	}
+}
+
 func (s SystemResource) setAttribute(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
 	id := req.PathParameter("id")
