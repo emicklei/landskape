@@ -79,7 +79,7 @@ type Connection struct {
 	Type       string      `datastore:"Type,noindex"`
 	Attributes []Attribute `datastore:",flatten"`
 	// populated
-	FromSystem, ToSystem System `datastore:"-"`
+	FromSystem, ToSystem System `datastore:"-" json:"-"`
 	// internal
 	DBKey *datastore.Key `datastore:"__key__" json:"-"`
 }

@@ -36,6 +36,7 @@ func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilte
 			Journal:    each.Journal,
 			To:         each.To,
 			From:       each.From,
+			Type:       each.Type,
 			Attributes: each.Attributes,
 		}
 		from, ok := sys[each.From]

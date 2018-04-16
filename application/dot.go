@@ -2,7 +2,6 @@ package application
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -42,7 +41,6 @@ func (e *dotBuilder) BuildFromAll(connections []model.Connection) {
 	hasAttributesSet := map[string]bool{}
 	for _, each := range connections {
 		if len(each.FromSystem.ID()) == 0 {
-			log.Printf("%#v", each)
 			panic("jammer")
 		}
 		from := e.graph.Node(each.FromSystem.ID())
@@ -61,7 +59,7 @@ func (e *dotBuilder) BuildFromAll(connections []model.Connection) {
 }
 
 func setUIAttributesForSystem(a dot.AttributesMap, s model.System) {
-	a.Attr("label", s.ID) // can be overwritten is ui-label was set
+	a.Attr("label", s.ID()) // can be overwritten is ui-label was set
 	a.Attr("color", colorForLabel(s.ID()))
 	for _, each := range s.Attributes {
 		if strings.HasPrefix(each.Name, "ui-") {
@@ -87,7 +85,7 @@ func setUIAttributesForConnection(a dot.AttributesMap, c model.Connection) {
 }
 
 func (e dotBuilder) WriteDotFile(output string) error {
-	log.Println(e.graph.String())
+	//log.Println(e.graph.String())
 	fo, err := os.Create(output)
 	if err != nil {
 		return err
