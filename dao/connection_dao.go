@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"log"
+	"time"
 
 	"cloud.google.com/go/datastore"
 	"github.com/emicklei/landskape/model"
@@ -22,17 +23,24 @@ func (s ConnectionDao) FindAllMatching(ctx context.Context, filter model.Connect
 	var list []model.Connection
 	query := datastore.NewQuery(conKind)
 	_, err := s.client.GetAll(ctx, query, &list)
+	for _, each := range list {
+		each.Attributes = append(each.Attributes, model.Attribute{Name: "id", Value: each.DBKey.Name})
+	}
 	return list, err
 }
 func (s ConnectionDao) Save(ctx context.Context, con model.Connection) error {
 	log.Printf("saving connection:%#v\n", con)
-	key := datastore.NameKey(conKind, con.ID(), nil)
-	_, err := s.client.Put(ctx, key, &con)
+	if con.DBKey == nil {
+		id, _ := model.GenerateUUID()
+		key := datastore.NameKey(conKind, id, nil)
+		con.DBKey = key
+	}
+	con.Journal.Modified = time.Now()
+	_, err := s.client.Put(ctx, con.DBKey, &con)
 	return err
 }
 func (s ConnectionDao) Remove(ctx context.Context, con model.Connection) error {
-	key := datastore.NameKey(conKind, con.ID(), nil)
-	return s.client.Delete(ctx, key)
+	return s.client.Delete(ctx, con.DBKey)
 }
 func (s ConnectionDao) RemoveAllToOrFrom(ctx context.Context, toOrFrom string) error {
 	return nil

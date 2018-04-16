@@ -22,8 +22,7 @@ func (s SystemDao) Exists(ctx context.Context, id string) bool {
 	return s.client.Get(ctx, key, new(model.System)) == nil
 }
 func (s SystemDao) Save(ctx context.Context, app *model.System) error {
-	key := datastore.NameKey(systemKind, app.ID, nil)
-	_, err := s.client.Put(ctx, key, app)
+	_, err := s.client.Put(ctx, app.DBKey, app)
 	return err
 }
 func (s SystemDao) FindAll(ctx context.Context) ([]model.System, error) {
@@ -34,7 +33,6 @@ func (s SystemDao) FindAll(ctx context.Context) ([]model.System, error) {
 }
 func (s SystemDao) FindById(ctx context.Context, id string) (sys model.System, err error) {
 	key := datastore.NameKey(systemKind, id, nil)
-	(&sys).ID = id
 	err = s.client.Get(ctx, key, &sys)
 	return
 }

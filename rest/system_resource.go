@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/emicklei/go-restful"
@@ -45,17 +44,17 @@ func (s SystemResource) Register() {
 		Writes(model.System{})) // to the response
 
 	ws.Route(ws.PUT("/{id}").To(s.put).
-		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(idParam).
 		// docs
 		Doc("create the system using its id").
-		Param(idParam).
+		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Reads(model.System{})) // from the request
 
-	ws.Route(ws.POST("").To(s.post).
-		Metadata(restfulspec.KeyOpenAPITags, tags).
+	ws.Route(ws.POST("/{id}").To(s.post).
+		Param(idParam).
 		// docs
 		Doc("update the system using its id").
-		Param(idParam).
+		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Reads(model.System{})) // from the request
 
 	ws.Route(ws.DELETE("/{id}").To(s.delete).
@@ -162,15 +161,10 @@ func (s SystemResource) getAll(req *restful.Request, resp *restful.Response) {
 // POST /systems/
 func (s SystemResource) post(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
-	app := new(model.System)
+	app := model.NewSystem(req.PathParameter("id"))
 	err := req.ReadEntity(app)
 	if err != nil {
 		resp.WriteError(http.StatusBadRequest, err)
-		return
-	}
-	if len(app.ID) == 0 {
-		err := restful.NewError(model.MISMATCH_ID, "Id is missing")
-		resp.WriteServiceError(http.StatusBadRequest, err)
 		return
 	}
 	_, err = s.service.SaveSystem(ctx, app)
@@ -183,15 +177,10 @@ func (s SystemResource) post(req *restful.Request, resp *restful.Response) {
 func (s SystemResource) put(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
 	id := req.PathParameter("id")
-	app := new(model.System)
+	app := model.NewSystem(id)
 	err := req.ReadEntity(app)
 	if err != nil {
 		resp.WriteError(http.StatusBadRequest, err)
-		return
-	}
-	if app.ID != id {
-		err := restful.NewError(model.MISMATCH_ID, fmt.Sprintf("Id mismatch: %v != %v", app.ID, id))
-		resp.WriteServiceError(http.StatusBadRequest, err)
 		return
 	}
 	if s.service.ExistsSystem(ctx, id) {

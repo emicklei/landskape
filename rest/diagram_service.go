@@ -59,7 +59,7 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 	output := fmt.Sprintf("%v/%v.%v", DotConfig["tmp"], id, format)
 
 	dotBuilder := application.NewDotBuilder()
-	dotBuilder.BuildFromAll(connections.List)
+	dotBuilder.BuildFromAll(connections)
 	dotBuilder.WriteDotFile(input)
 
 	cmd := exec.Command(DotConfig["binpath"],

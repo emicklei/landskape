@@ -34,7 +34,7 @@ func (c ConnectionResource) Register() {
 		Param(ws.QueryParameter("type", "comma separated list of known connection types")).
 		Param(ws.QueryParameter("center", "comma separated list of system ids")).
 		To(c.getFiltered).
-		Writes(model.Connection{}))
+		Writes([]model.Connection{}))
 
 	ws.Route(ws.PUT("/from/{from}/to/{to}/type/{type}").
 		Doc(`Create a new connection using the from,to,type values`).

@@ -15,18 +15,18 @@ type Logic struct {
 	ConnectionDao dao.ConnectionDataAccess
 }
 
-func (l Logic) AllSystems(ctx context.Context) (model.Systems, error) {
+func (l Logic) AllSystems(ctx context.Context) ([]model.System, error) {
 	apps, err := l.SystemDao.FindAll(ctx)
 	if err != nil {
-		return model.Systems{}, err
+		return []model.System{}, err
 	}
-	return model.Systems{apps}, nil
+	return apps, nil
 }
 
-func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilter) (model.Connections, error) {
+func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilter) ([]model.Connection, error) {
 	cons, err := l.ConnectionDao.FindAllMatching(ctx, filter)
 	if err != nil {
-		return model.Connections{}, err
+		return []model.Connection{}, err
 	}
 	sys := map[string]model.System{}
 	// populate all systems, sequential for now
@@ -42,7 +42,7 @@ func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilte
 		if !ok {
 			s, err := l.GetSystem(ctx, each.From)
 			if err != nil {
-				return model.Connections{}, err
+				return []model.Connection{}, err
 			}
 			from = s
 			sys[each.From] = from
@@ -52,7 +52,7 @@ func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilte
 		if !ok {
 			s, err := l.GetSystem(ctx, each.To)
 			if err != nil {
-				return model.Connections{}, err
+				return []model.Connection{}, err
 			}
 			to = s
 			sys[each.To] = to
@@ -60,7 +60,7 @@ func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilte
 		other.ToSystem = to
 		resolved = append(resolved, other)
 	}
-	return model.Connections{resolved}, nil
+	return resolved, nil
 }
 
 func (l Logic) DeleteConnection(ctx context.Context, con model.Connection) error {
@@ -73,7 +73,7 @@ func (l Logic) SaveConnection(ctx context.Context, con model.Connection, createI
 	}
 	if !l.ExistsSystem(ctx, con.From) {
 		if createIfAbsent {
-			_, err := l.SaveSystem(ctx, &model.System{ID: con.From})
+			_, err := l.SaveSystem(ctx, model.NewSystem(con.From))
 			if err != nil {
 				return err
 			}
@@ -84,12 +84,13 @@ func (l Logic) SaveConnection(ctx context.Context, con model.Connection, createI
 	}
 	if !l.ExistsSystem(ctx, con.To) {
 		if createIfAbsent {
-			_, err := l.SaveSystem(ctx, &model.System{ID: con.To})
+			_, err := l.SaveSystem(ctx, model.NewSystem(con.To))
 			if err != nil {
 				return err
 			}
 		}
 	}
+	// TODO move to validate
 	if len(con.Type) == 0 {
 		return errors.New("Invalid type (empty)")
 	}
@@ -123,7 +124,7 @@ func (l Logic) ChangeSystemId(ctx context.Context, oldId, newId string) (*model.
 	if err == nil {
 		return nil, errors.New("System already exists:" + newId)
 	}
-	newSystem := &model.System{ID: newId}
+	newSystem := model.NewSystem(newId)
 	newSystem.Attributes = target.Attributes
 	return l.SaveSystem(ctx, newSystem)
 }

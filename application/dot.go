@@ -41,18 +41,18 @@ func (e edge) String() string {
 func (e *dotBuilder) BuildFromAll(connections []model.Connection) {
 	hasAttributesSet := map[string]bool{}
 	for _, each := range connections {
-		if len(each.FromSystem.ID) == 0 {
+		if len(each.FromSystem.ID()) == 0 {
 			log.Printf("%#v", each)
 			panic("jammer")
 		}
-		from := e.graph.Node(each.FromSystem.ID)
-		if hasSet, ok := hasAttributesSet[each.FromSystem.ID]; !hasSet || !ok {
-			hasAttributesSet[each.FromSystem.ID] = true
+		from := e.graph.Node(each.FromSystem.ID())
+		if hasSet, ok := hasAttributesSet[each.FromSystem.ID()]; !hasSet || !ok {
+			hasAttributesSet[each.FromSystem.ID()] = true
 			setUIAttributesForSystem(from.AttributesMap, each.FromSystem)
 		}
-		to := e.graph.Node(each.ToSystem.ID)
-		if hasSet, ok := hasAttributesSet[each.ToSystem.ID]; !hasSet || !ok {
-			hasAttributesSet[each.ToSystem.ID] = true
+		to := e.graph.Node(each.ToSystem.ID())
+		if hasSet, ok := hasAttributesSet[each.ToSystem.ID()]; !hasSet || !ok {
+			hasAttributesSet[each.ToSystem.ID()] = true
 			setUIAttributesForSystem(to.AttributesMap, each.ToSystem)
 		}
 		edge := e.graph.Edge(from, to)
@@ -62,7 +62,7 @@ func (e *dotBuilder) BuildFromAll(connections []model.Connection) {
 
 func setUIAttributesForSystem(a dot.AttributesMap, s model.System) {
 	a.Attr("label", s.ID) // can be overwritten is ui-label was set
-	a.Attr("color", colorForLabel(s.ID))
+	a.Attr("color", colorForLabel(s.ID()))
 	for _, each := range s.Attributes {
 		if strings.HasPrefix(each.Name, "ui-") {
 			key := each.Name[3:]

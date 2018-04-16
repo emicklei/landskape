@@ -1,31 +1,25 @@
 package model
 
 import (
-	"time"
+	"cloud.google.com/go/datastore"
 )
-
-type Validator interface {
-	Validate() error
-}
-
-type AttributesHolder interface {
-	AttributeList() []Attribute
-}
-
-// Journal is to track who (or what System)
-// is responsible for the current state of the containing struct.
-type Journal struct {
-	Modified   time.Time
-	ModifiedBy string
-}
 
 // System is the generic name for a IT landscape object.
 // Examples are: Webservice, Database schema, Ftp server, Third party solution
 type System struct {
 	Journal
-	ID         string
-	Attributes []Attribute
+	Attributes []Attribute `datastore:",flatten"`
+	// internal
+	DBKey *datastore.Key `datastore:"__key__" json:"-"`
 }
+
+func NewSystem(id string) *System {
+	return &System{
+		DBKey: datastore.NameKey("landskape.System", id, nil),
+	}
+}
+
+func (s System) ID() string { return s.DBKey.Name }
 
 func (s System) AttributeList() []Attribute { return s.Attributes }
 
@@ -82,10 +76,12 @@ func AttributeValue(holder AttributesHolder, name string) string {
 type Connection struct {
 	Journal
 	From, To   string
-	Type       string
-	Attributes []Attribute
+	Type       string      `datastore:"Type,noindex"`
+	Attributes []Attribute `datastore:",flatten"`
 	// populated
-	FromSystem, ToSystem System
+	FromSystem, ToSystem System `datastore:"-"`
+	// internal
+	DBKey *datastore.Key `datastore:"__key__" json:"-"`
 }
 
 func (c Connection) Validate() error {
@@ -95,23 +91,3 @@ func (c Connection) Validate() error {
 func (c Connection) AttributeList() []Attribute {
 	return c.Attributes
 }
-
-func (c Connection) ID() string {
-	return c.From + "_" + c.Type + "_" + c.To
-}
-
-// For querying connections ; each field can be single or comma separated of regular expressions
-type ConnectionsFilter struct {
-	Froms, Tos, Types, Centers []string
-}
-
-// For querying Systems and Connections ; each field can be a regular expression
-type AttributesFilter struct {
-	Name, Value string
-}
-
-// Systems is a container of System for XML/JSON export
-type Systems struct{ List []System }
-
-// Connections is a container of System for XML/JSON export
-type Connections struct{ List []Connection }
