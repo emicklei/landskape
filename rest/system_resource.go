@@ -1,10 +1,11 @@
 package rest
 
 import (
+	"bufio"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/emicklei/go-restful"
-	restfulspec "github.com/emicklei/go-restful-openapi"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/model"
 )
@@ -17,78 +18,10 @@ type SystemResource struct {
 	service application.Logic
 }
 
-func NewSystemResource(s application.Logic) SystemResource {
-	return SystemResource{service: s}
-}
-
-func (s SystemResource) Register() {
-	ws := new(restful.WebService)
-	tags := []string{"systems"}
-	ws.Path("/systems").
-		Consumes(restful.MIME_JSON).
-		Produces(restful.MIME_JSON)
-
-	idParam := ws.PathParameter("id", "identifier of the system").DataType("string")
-
-	ws.Route(ws.GET("").To(s.getAll).
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		// docs
-		Doc("list all known systems").
-		Writes([]model.System{}))
-
-	ws.Route(ws.GET("/{id}").To(s.get).
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		// docs
-		Doc("get the system using its id").
-		Param(idParam).
-		Writes(model.System{})) // to the response
-
-	ws.Route(ws.PUT("/{id}").To(s.put).
-		Param(idParam).
-		// docs
-		Doc("create the system using its id").
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Reads(model.System{})) // from the request
-
-	ws.Route(ws.POST("/{id}").To(s.post).
-		Param(idParam).
-		// docs
-		Doc("update the system using its id").
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Reads(model.System{})) // from the request
-
-	ws.Route(ws.DELETE("/{id}").To(s.delete).
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		// docs
-		Doc("delete the system using its id").
-		Param(idParam))
-
-	ws.Route(ws.PUT("/{id}/attributes").To(s.setAttribute).
-		Param(idParam).
-		Param(ws.QueryParameter("name", "name of the attribute. specials = {ui-label,ui-color}")).
-		Param(ws.QueryParameter("value", "value of the attribute")).
-		// docs
-		Doc("set an attribute value").
-		Metadata(restfulspec.KeyOpenAPITags, tags))
-
-	ws.Route(ws.DELETE("/{id}/attributes").To(s.deleteAttribute).
-		Param(idParam).
-		Param(ws.QueryParameter("name", "name of the attribute. specials = {ui-label,ui-color}")).
-		// docs
-		Doc("set an attribute value").
-		Metadata(restfulspec.KeyOpenAPITags, tags))
-
-	restful.Add(ws)
-}
-
 func (s SystemResource) deleteAttribute(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
 	id := req.PathParameter("id")
-	name := req.QueryParameter("name")
-	if len(name) == 0 {
-		resp.WriteErrorString(400, "name cannot be empty")
-		return
-	}
+	name := req.PathParameter("name")
 	app, err := s.service.GetSystem(ctx, id)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
@@ -100,17 +33,24 @@ func (s SystemResource) deleteAttribute(req *restful.Request, resp *restful.Resp
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 	}
+	resp.WriteAsJson(papp)
 }
 
 func (s SystemResource) setAttribute(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
 	id := req.PathParameter("id")
-	name := req.QueryParameter("name")
-	if len(name) == 0 {
-		resp.WriteErrorString(400, "name cannot be empty")
+	name := req.PathParameter("name")
+
+	r := bufio.NewReader(req.Request.Body)
+	defer req.Request.Body.Close()
+	line, err := ioutil.ReadAll(r)
+	if err != nil {
+		logError("putAttribute", err)
+		resp.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	value := req.QueryParameter("value")
+	value := string(line)
+
 	app, err := s.service.GetSystem(ctx, id)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
@@ -122,7 +62,7 @@ func (s SystemResource) setAttribute(req *restful.Request, resp *restful.Respons
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 	}
-	resp.WriteEntity(papp)
+	resp.WriteAsJson(papp)
 }
 
 // DELETE /systems/{id}

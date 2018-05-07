@@ -7,19 +7,19 @@ import (
 // System is the generic name for a IT landscape object.
 // Examples are: Webservice, Database schema, Ftp server, Third party solution
 type System struct {
-	Journal
+	// populated from DBKey
+	ID         string
 	Attributes []Attribute `datastore:",flatten"`
 	// internal
 	DBKey *datastore.Key `datastore:"__key__" json:"-"`
+	Journal
 }
 
 func NewSystem(id string) *System {
-	return &System{
-		DBKey: datastore.NameKey("landskape.System", id, nil),
-	}
+	key := datastore.NameKey("landskape.System", id, nil)
+	key.Namespace = "landskape"
+	return &System{DBKey: key}
 }
-
-func (s System) ID() string { return s.DBKey.Name }
 
 func (s System) AttributeList() []Attribute { return s.Attributes }
 
@@ -43,9 +43,9 @@ func (s *System) SetAttribute(name, value string) {
 		return
 	}
 	// replace or add
-	for _, each := range s.Attributes {
+	for i, each := range s.Attributes {
 		if each.Name == name {
-			each.Value = value
+			s.Attributes[i] = Attribute{Name: name, Value: value}
 			return
 		}
 	}
@@ -90,4 +90,34 @@ func (c Connection) Validate() error {
 
 func (c Connection) AttributeList() []Attribute {
 	return c.Attributes
+}
+
+func (c *Connection) SetAttribute(name, value string) {
+	if len(name) == 0 {
+		return
+	}
+	if len(value) == 0 {
+		// remove it
+		without := []Attribute{}
+		for _, each := range c.Attributes {
+			if each.Name != name {
+				without = append(without, each)
+			}
+		}
+		c.Attributes = without
+		return
+	}
+	// replace or add
+	for i, each := range c.Attributes {
+		if each.Name == name {
+			c.Attributes[i] = Attribute{Name: name, Value: value}
+			return
+		}
+	}
+	// not found, add it
+	c.Attributes = append(c.Attributes, Attribute{Name: name, Value: value})
+}
+
+func (c *Connection) DeleteAttribute(name string) {
+	c.SetAttribute(name, "")
 }

@@ -2,11 +2,12 @@ package dao
 
 import (
 	"context"
-	"log"
+	"errors"
 	"time"
 
 	"cloud.google.com/go/datastore"
 	"github.com/emicklei/landskape/model"
+	"github.com/emicklei/tre"
 )
 
 const conKind = "landskape.Connection"
@@ -21,27 +22,40 @@ func NewConnectionDao(ds *datastore.Client) *ConnectionDao {
 
 func (s ConnectionDao) FindAllMatching(ctx context.Context, filter model.ConnectionsFilter) ([]model.Connection, error) {
 	var list []model.Connection
-	query := datastore.NewQuery(conKind)
+	query := datastore.NewQuery(conKind).Namespace("landskape")
+	// for now get all and post filter here
 	_, err := s.client.GetAll(ctx, query, &list)
-	for _, each := range list {
-		each.Attributes = append(each.Attributes, model.Attribute{Name: "id", Value: each.DBKey.Name})
+	if err != nil {
+		return list, tre.New(err, "GetAll failed", "kind", conKind, "filter", filter)
 	}
-	return list, err
+	filtered := []model.Connection{}
+	for _, each := range list {
+		if filter.Matches(each) {
+			filtered = append(filtered, each)
+		}
+	}
+	return filtered, nil
 }
+
 func (s ConnectionDao) Save(ctx context.Context, con model.Connection) error {
-	log.Printf("saving connection:%#v\n", con)
 	if con.DBKey == nil {
 		id, _ := model.GenerateUUID()
 		key := datastore.NameKey(conKind, id, nil)
+		key.Namespace = "landskape"
 		con.DBKey = key
 	}
 	con.Journal.Modified = time.Now()
 	_, err := s.client.Put(ctx, con.DBKey, &con)
 	return err
 }
+
 func (s ConnectionDao) Remove(ctx context.Context, con model.Connection) error {
+	if con.DBKey == nil {
+		return errors.New("nil connection DBKey")
+	}
 	return s.client.Delete(ctx, con.DBKey)
 }
+
 func (s ConnectionDao) RemoveAllToOrFrom(ctx context.Context, toOrFrom string) error {
 	return nil
 }

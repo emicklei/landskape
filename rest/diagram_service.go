@@ -7,6 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/emicklei/go-restful"
+	restfulspec "github.com/emicklei/go-restful-openapi"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/model"
 )
@@ -20,9 +21,12 @@ type DiagramResource struct {
 func NewDiagramService(s application.Logic) *restful.WebService {
 	ws := new(restful.WebService)
 	d := DiagramResource{service: s}
+	tags := []string{"diagrams"}
+
 	ws.Path("/diagram").
 		Produces("text/plain")
 	ws.Route(ws.GET("/").To(d.computeDiagram).
+		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Doc(`Compute a graphical diagram with all (filtered) connections for all systems and the given scope`).
 		Param(ws.QueryParameter("from", "comma separated list of system ids")).
 		Param(ws.QueryParameter("to", "comma separated list of system ids")).
@@ -41,7 +45,7 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 		Centers: asFilterParameter(req.QueryParameter("center"))}
 	connections, err := d.service.AllConnections(ctx, filter)
 	if err != nil {
-		log.Printf("AllConnections failed:%v", err)
+		log.Printf("AllConnections failed:%#v", err)
 		resp.WriteError(500, err)
 		return
 	}
@@ -59,6 +63,7 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 	output := fmt.Sprintf("%v/%v.%v", DotConfig["tmp"], id, format)
 
 	dotBuilder := application.NewDotBuilder()
+	dotBuilder.ClusterBy(req.QueryParameter("cluster"))
 	dotBuilder.BuildFromAll(connections)
 	dotBuilder.WriteDotFile(input)
 

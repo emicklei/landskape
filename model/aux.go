@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Validator interface {
 	Validate() error
@@ -14,12 +16,7 @@ type AttributesHolder interface {
 // is responsible for the current state of the containing struct.
 type Journal struct {
 	Modified   time.Time
-	ModifiedBy string
-}
-
-// For querying connections ; each field can be single or comma separated of regular expressions
-type ConnectionsFilter struct {
-	Froms, Tos, Types, Centers []string
+	ModifiedBy string `json:",omitempty"`
 }
 
 // For querying Systems and Connections ; each field can be a regular expression

@@ -1,59 +1,20 @@
 package rest
 
 import (
+	"bufio"
+	"errors"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 
 	"github.com/emicklei/go-restful"
-	restfulspec "github.com/emicklei/go-restful-openapi"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/model"
 )
 
 type ConnectionResource struct {
 	service application.Logic
-}
-
-func NewConnectionResource(s application.Logic) ConnectionResource {
-	return ConnectionResource{service: s}
-}
-
-func (c ConnectionResource) Register() {
-	ws := new(restful.WebService)
-	tags := []string{"connections"}
-
-	ws.Path("/connections").
-		Produces(restful.MIME_JSON)
-
-	ws.Route(ws.GET("/").
-		Doc(`Get all (filtered) connections for all systems and the given scope`).
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Param(ws.QueryParameter("from", "comma separated list of system ids")).
-		Param(ws.QueryParameter("to", "comma separated list of system ids")).
-		Param(ws.QueryParameter("type", "comma separated list of known connection types")).
-		Param(ws.QueryParameter("center", "comma separated list of system ids")).
-		To(c.getFiltered).
-		Writes([]model.Connection{}))
-
-	ws.Route(ws.PUT("/from/{from}/to/{to}/type/{type}").
-		Doc(`Create a new connection using the from,to,type values`).
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Param(ws.PathParameter("from", "system id")).
-		Param(ws.PathParameter("to", "system id")).
-		Param(ws.PathParameter("type", "indicate type of connection, e.g. http,jdbc,ftp,aq")).
-		Param(ws.QueryParameter("allowCreate", "if true then create any missing systems")).
-		To(c.put))
-
-	ws.Route(ws.DELETE("/from/{from}/to/{to}/type/{type}").
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Doc(`Delete an existing connection using the from,to,type values`).
-		Param(ws.PathParameter("from", "system id")).
-		Param(ws.PathParameter("to", "system id")).
-		Param(ws.PathParameter("type", "indicate type of connection, e.g. http,jdbc,ftp,aq")).
-		To(c.delete))
-
-	restful.Add(ws)
 }
 
 func (c *ConnectionResource) getFiltered(req *restful.Request, resp *restful.Response) {
@@ -63,7 +24,6 @@ func (c *ConnectionResource) getFiltered(req *restful.Request, resp *restful.Res
 		Tos:     asFilterParameter(req.QueryParameter("to")),
 		Types:   asFilterParameter(req.QueryParameter("type")),
 		Centers: asFilterParameter(req.QueryParameter("center"))}
-	// hopwatch.Display("filter", filter)
 	cons, err := c.service.AllConnections(ctx, filter)
 	if err != nil {
 		logError("getFilteredConnections", err)
@@ -74,10 +34,94 @@ func (c *ConnectionResource) getFiltered(req *restful.Request, resp *restful.Res
 }
 
 func asFilterParameter(param string) (list []string) {
-	if param == "" {
+	if len(param) == 0 {
 		return list
 	}
 	return strings.Split(param, ",")
+}
+
+func (c *ConnectionResource) putAttribute(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
+
+	r := bufio.NewReader(req.Request.Body)
+	defer req.Request.Body.Close()
+	line, err := ioutil.ReadAll(r)
+	value := string(line)
+	if err != nil {
+		logError("putAttribute", err)
+		resp.WriteError(http.StatusBadRequest, err)
+		return
+	}
+
+	filter := model.ConnectionsFilter{
+		Froms: []string{req.PathParameter("from")},
+		Tos:   []string{req.PathParameter("to")},
+		Types: []string{req.PathParameter("type")}}
+	connections, err := c.service.FindAllMatching(ctx, filter)
+	if err != nil {
+		logError("putAttribute", err)
+		resp.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	if len(connections) == 0 {
+		err = errors.New("no connections found")
+		logError("deleteAttribute", err)
+		resp.WriteError(http.StatusNotFound, err)
+		return
+	}
+	if len(connections) > 1 {
+		err = errors.New("multiple connections found")
+		logError("putAttribute", err)
+		resp.WriteError(http.StatusBadRequest, err)
+		return
+	}
+	connection := &(connections[0]) // TODO use pointer everywhere
+	connection.SetAttribute(req.PathParameter("name"), value)
+	// now overwrite
+	err = c.service.SaveConnection(ctx, *connection, false)
+	if err != nil {
+		logError("putAttribute", err)
+		resp.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	resp.WriteAsJson(connection)
+}
+
+func (c *ConnectionResource) deleteAttribute(req *restful.Request, resp *restful.Response) {
+	ctx := req.Request.Context()
+
+	filter := model.ConnectionsFilter{
+		Froms: []string{req.PathParameter("from")},
+		Tos:   []string{req.PathParameter("to")},
+		Types: []string{req.PathParameter("type")}}
+	connections, err := c.service.FindAllMatching(ctx, filter)
+	if err != nil {
+		logError("deleteAttribute", err)
+		resp.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	if len(connections) == 0 {
+		err = errors.New("no connections found")
+		logError("deleteAttribute", err)
+		resp.WriteError(http.StatusNotFound, err)
+		return
+	}
+	if len(connections) > 1 {
+		err = errors.New("multiple connections found")
+		logError("deleteAttribute", err)
+		resp.WriteError(http.StatusBadRequest, err)
+		return
+	}
+	connection := &(connections[0]) // TODO use pointer everywhere
+	connection.DeleteAttribute(req.PathParameter("name"))
+	// now overwrite
+	err = c.service.SaveConnection(ctx, *connection, false)
+	if err != nil {
+		logError("deleteAttribute", err)
+		resp.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	resp.WriteAsJson(connection)
 }
 
 func (c *ConnectionResource) put(req *restful.Request, resp *restful.Response) {
@@ -102,20 +146,27 @@ func (c *ConnectionResource) put(req *restful.Request, resp *restful.Response) {
 
 func (c *ConnectionResource) delete(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
-	connection := model.Connection{
-		From: req.PathParameter("from"),
-		To:   req.PathParameter("to"),
-		Type: req.PathParameter("type")}
-	if err := connection.Validate(); err != nil {
+	filter := model.ConnectionsFilter{
+		Froms: []string{req.PathParameter("from")},
+		Tos:   []string{req.PathParameter("to")},
+		Types: []string{req.PathParameter("type")},
+	}
+	connections, err := c.service.FindAllMatching(ctx, filter)
+	if err != nil || len(connections) == 0 {
 		logError("deleteConnection", err)
-		resp.WriteError(http.StatusBadRequest, err)
+		if err == nil {
+			err = errors.New("no connections")
+		}
+		resp.WriteError(http.StatusNotFound, err)
 		return
 	}
-	err := c.service.DeleteConnection(ctx, connection)
-	if err != nil {
-		logError("deleteConnection", err)
-		resp.WriteError(http.StatusInternalServerError, err)
-		return
+	for _, each := range connections {
+		err = c.service.DeleteConnection(ctx, each)
+		if err != nil {
+			logError("deleteConnection", err)
+			resp.WriteError(http.StatusInternalServerError, err)
+			return
+		}
 	}
 	resp.WriteHeader(201)
 }

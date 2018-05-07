@@ -6,6 +6,7 @@ import (
 
 	"github.com/emicklei/landskape/dao"
 	"github.com/emicklei/landskape/model"
+	"github.com/emicklei/tre"
 	//	"log"
 	"time"
 )
@@ -23,10 +24,14 @@ func (l Logic) AllSystems(ctx context.Context) ([]model.System, error) {
 	return apps, nil
 }
 
+func (l Logic) FindAllMatching(ctx context.Context, filter model.ConnectionsFilter) ([]model.Connection, error) {
+	return l.ConnectionDao.FindAllMatching(ctx, filter)
+}
+
 func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilter) ([]model.Connection, error) {
 	cons, err := l.ConnectionDao.FindAllMatching(ctx, filter)
 	if err != nil {
-		return []model.Connection{}, err
+		return []model.Connection{}, tre.New(err, "FindAllMatching failed")
 	}
 	sys := map[string]model.System{}
 	// populate all systems, sequential for now
@@ -43,7 +48,7 @@ func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilte
 		if !ok {
 			s, err := l.GetSystem(ctx, each.From)
 			if err != nil {
-				return []model.Connection{}, err
+				return []model.Connection{}, tre.New(err, "GetSystem failed", "system id", each.From)
 			}
 			from = s
 			sys[each.From] = from
@@ -53,7 +58,7 @@ func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilte
 		if !ok {
 			s, err := l.GetSystem(ctx, each.To)
 			if err != nil {
-				return []model.Connection{}, err
+				return []model.Connection{}, tre.New(err, "GetSystem failed", "system id", each.To)
 			}
 			to = s
 			sys[each.To] = to

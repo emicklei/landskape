@@ -84,5 +84,7 @@ func enrichSwaggerObject(swo *spec.Swagger) {
 		Name:        "systems",
 		Description: "Managing Systems"}}, spec.Tag{TagProps: spec.TagProps{
 		Name:        "connections",
-		Description: "Managing Connections"}}}
+		Description: "Managing Connections"}}, spec.Tag{TagProps: spec.TagProps{
+		Name:        "diagrams",
+		Description: "Display graphs"}}}
 }

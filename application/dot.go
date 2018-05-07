@@ -2,6 +2,7 @@ package application
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -20,16 +21,22 @@ type edge struct {
 }
 
 type dotBuilder struct {
-	edges []edge
-	nodes map[string]string
-	graph *dot.Graph
+	edges                []edge
+	nodes                map[string]string
+	graph                *dot.Graph
+	clusterAttributeName string
 }
 
 func NewDotBuilder() dotBuilder {
 	builder := dotBuilder{}
 	builder.nodes = map[string]string{}
-	builder.graph = dot.NewDigraph()
+	builder.graph = dot.NewGraph(dot.Directed)
 	return builder
+}
+
+func (e *dotBuilder) ClusterBy(clusterAttribute string) *dotBuilder {
+	e.clusterAttributeName = clusterAttribute
+	return e
 }
 
 func (e edge) String() string {
@@ -39,28 +46,51 @@ func (e edge) String() string {
 // BuildFromAll composes the edges and nodes from a collection of Connection
 func (e *dotBuilder) BuildFromAll(connections []model.Connection) {
 	hasAttributesSet := map[string]bool{}
+	// first apply attributes
 	for _, each := range connections {
-		if len(each.FromSystem.ID()) == 0 {
-			panic("jammer")
+		if len(each.FromSystem.ID) == 0 {
+			log.Println("ERROR: system without ID")
+			return
 		}
-		from := e.graph.Node(each.FromSystem.ID())
-		if hasSet, ok := hasAttributesSet[each.FromSystem.ID()]; !hasSet || !ok {
-			hasAttributesSet[each.FromSystem.ID()] = true
+		fromGraph := e.graphForSystem(each.FromSystem)
+		toGraph := e.graphForSystem(each.ToSystem)
+		from := fromGraph.Node(each.FromSystem.ID)
+		to := toGraph.Node(each.ToSystem.ID)
+		if hasSet, ok := hasAttributesSet[each.FromSystem.ID]; !hasSet || !ok {
+			hasAttributesSet[each.FromSystem.ID] = true
 			setUIAttributesForSystem(from.AttributesMap, each.FromSystem)
 		}
-		to := e.graph.Node(each.ToSystem.ID())
-		if hasSet, ok := hasAttributesSet[each.ToSystem.ID()]; !hasSet || !ok {
-			hasAttributesSet[each.ToSystem.ID()] = true
+		if hasSet, ok := hasAttributesSet[each.ToSystem.ID]; !hasSet || !ok {
+			hasAttributesSet[each.ToSystem.ID] = true
 			setUIAttributesForSystem(to.AttributesMap, each.ToSystem)
 		}
-		edge := e.graph.Edge(from, to)
+	}
+	for _, each := range connections {
+		fromGraph := e.graphForSystem(each.FromSystem)
+		toGraph := e.graphForSystem(each.ToSystem)
+		from := fromGraph.Node(each.FromSystem.ID)
+		to := toGraph.Node(each.ToSystem.ID)
+		// use fromGraph for adding the edge; the Edge func will find the common ancestor.
+		edge := fromGraph.Edge(from, to)
 		setUIAttributesForConnection(edge.AttributesMap, each)
 	}
 }
 
+func (e *dotBuilder) graphForSystem(sys model.System) *dot.Graph {
+	if len(e.clusterAttributeName) == 0 {
+		// root
+		return e.graph
+	}
+	clusterValue := model.AttributeValue(sys, e.clusterAttributeName)
+	if len(clusterValue) == 0 {
+		// root
+		return e.graph
+	}
+	return e.graph.Subgraph(clusterValue, dot.ClusterOption{})
+}
+
 func setUIAttributesForSystem(a dot.AttributesMap, s model.System) {
-	a.Attr("label", s.ID()) // can be overwritten is ui-label was set
-	a.Attr("color", colorForLabel(s.ID()))
+	a.Attr("label", s.ID) // can be overwritten is ui-label was set
 	for _, each := range s.Attributes {
 		if strings.HasPrefix(each.Name, "ui-") {
 			key := each.Name[3:]
@@ -73,7 +103,6 @@ func setUIAttributesForSystem(a dot.AttributesMap, s model.System) {
 
 func setUIAttributesForConnection(a dot.AttributesMap, c model.Connection) {
 	a.Attr("label", c.Type) // can be overwritten is ui-label was set
-	a.Attr("color", colorForLabel(c.Type))
 	for _, each := range c.Attributes {
 		if strings.HasPrefix(each.Name, "ui-") {
 			key := each.Name[3:]
@@ -93,19 +122,4 @@ func (e dotBuilder) WriteDotFile(output string) error {
 	defer fo.Close()
 	e.graph.Write(fo)
 	return nil
-}
-
-func colorForLabel(label string) string {
-	switch {
-	case label == "jdbc":
-		return "#E01BD0"
-	case label == "dblink":
-		return "#FF0000"
-	case label == "aq":
-		return "#0000FF"
-	case label == "http":
-		return "#EDB845"
-
-	}
-	return "#222"
 }
