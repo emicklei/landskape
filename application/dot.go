@@ -2,6 +2,7 @@ package application
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -122,4 +123,8 @@ func (e dotBuilder) WriteDotFile(output string) error {
 	defer fo.Close()
 	e.graph.Write(fo)
 	return nil
+}
+
+func (d dotBuilder) WriteDot(w io.Writer) {
+	d.graph.Write(w)
 }

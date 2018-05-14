@@ -43,6 +43,7 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 		Tos:     asFilterParameter(req.QueryParameter("to")),
 		Types:   asFilterParameter(req.QueryParameter("type")),
 		Centers: asFilterParameter(req.QueryParameter("center"))}
+	dotOnly := req.QueryParameter("format") == "dot"
 	connections, err := d.service.AllConnections(ctx, filter)
 	if err != nil {
 		log.Printf("AllConnections failed:%#v", err)
@@ -65,6 +66,12 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 	dotBuilder := application.NewDotBuilder()
 	dotBuilder.ClusterBy(req.QueryParameter("cluster"))
 	dotBuilder.BuildFromAll(connections)
+
+	if dotOnly {
+		resp.AddHeader("Content-Type", "text/plain")
+		dotBuilder.WriteDot(resp)
+		return
+	}
 	dotBuilder.WriteDotFile(input)
 
 	cmd := exec.Command(DotConfig["binpath"],

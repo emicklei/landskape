@@ -8,7 +8,6 @@ import (
 	"github.com/emicklei/landskape/model"
 	"github.com/emicklei/tre"
 	//	"log"
-	"time"
 )
 
 type Logic struct {
@@ -38,7 +37,6 @@ func (l Logic) AllConnections(ctx context.Context, filter model.ConnectionsFilte
 	resolved := []model.Connection{}
 	for _, each := range cons {
 		other := model.Connection{
-			Journal:    each.Journal,
 			To:         each.To,
 			From:       each.From,
 			Type:       each.Type,
@@ -117,7 +115,6 @@ func (l Logic) ExistsSystem(ctx context.Context, id string) bool {
 }
 
 func (l Logic) SaveSystem(ctx context.Context, app *model.System) (*model.System, error) {
-	app.Modified = time.Now()
 	return app, l.SystemDao.Save(ctx, app)
 }
 

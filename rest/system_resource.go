@@ -98,21 +98,6 @@ func (s SystemResource) getAll(req *restful.Request, resp *restful.Response) {
 	resp.WriteEntity(apps)
 }
 
-// POST /systems/
-func (s SystemResource) post(req *restful.Request, resp *restful.Response) {
-	ctx := req.Request.Context()
-	app := model.NewSystem(req.PathParameter("id"))
-	err := req.ReadEntity(app)
-	if err != nil {
-		resp.WriteError(http.StatusBadRequest, err)
-		return
-	}
-	_, err = s.service.SaveSystem(ctx, app)
-	if err != nil {
-		resp.WriteError(http.StatusInternalServerError, err)
-	}
-}
-
 // PUT /systems/{id}
 func (s SystemResource) put(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()

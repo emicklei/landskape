@@ -11,6 +11,8 @@ func NewConnectionResource(s application.Logic) ConnectionResource {
 	return ConnectionResource{service: s}
 }
 
+const connectionTypes = "http,jdbc,grpc,pubsub,ftp,aq,..."
+
 func (c ConnectionResource) Register() {
 	ws := new(restful.WebService)
 	tags := []string{"connections"}
@@ -33,7 +35,7 @@ func (c ConnectionResource) Register() {
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("from", "system id")).
 		Param(ws.PathParameter("to", "system id")).
-		Param(ws.PathParameter("type", "indicate type of connection, e.g. http,jdbc,ftp,aq")).
+		Param(ws.PathParameter("type", "indicate type of connection, e.g. "+connectionTypes)).
 		Param(ws.QueryParameter("allowCreate", "if true then create any missing systems")).
 		To(c.put))
 
@@ -42,7 +44,7 @@ func (c ConnectionResource) Register() {
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("from", "system id")).
 		Param(ws.PathParameter("to", "system id")).
-		Param(ws.PathParameter("type", "indicate type of connection, e.g. http,jdbc,ftp,aq")).
+		Param(ws.PathParameter("type", "indicate type of connection, e.g. "+connectionTypes)).
 		Param(ws.PathParameter("name", "name of the attribute. specials = {ui-label,ui-color}")).
 		Param(ws.BodyParameter("value", "value of the attribute")).
 		To(c.putAttribute))
@@ -52,7 +54,7 @@ func (c ConnectionResource) Register() {
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("from", "system id")).
 		Param(ws.PathParameter("to", "system id")).
-		Param(ws.PathParameter("type", "indicate type of connection, e.g. http,jdbc,ftp,aq")).
+		Param(ws.PathParameter("type", "indicate type of connection, e.g. "+connectionTypes)).
 		Param(ws.PathParameter("name", "name of the attribute. specials = {ui-label,ui-color}")).
 		To(c.deleteAttribute))
 
@@ -61,7 +63,7 @@ func (c ConnectionResource) Register() {
 		Doc(`Delete an existing connection using the from,to,type values`).
 		Param(ws.PathParameter("from", "system id")).
 		Param(ws.PathParameter("to", "system id")).
-		Param(ws.PathParameter("type", "indicate type of connection, e.g. http,jdbc,ftp,aq")).
+		Param(ws.PathParameter("type", "indicate type of connection, e.g. "+connectionTypes)).
 		To(c.delete))
 
 	restful.Add(ws)

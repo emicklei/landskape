@@ -3,7 +3,6 @@ package dao
 import (
 	"context"
 	"errors"
-	"time"
 
 	"cloud.google.com/go/datastore"
 	"github.com/emicklei/landskape/model"
@@ -44,7 +43,6 @@ func (s ConnectionDao) Save(ctx context.Context, con model.Connection) error {
 		key.Namespace = "landskape"
 		con.DBKey = key
 	}
-	con.Journal.Modified = time.Now()
 	_, err := s.client.Put(ctx, con.DBKey, &con)
 	return err
 }

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"log"
 
 	"cloud.google.com/go/datastore"
 	"github.com/emicklei/landskape/model"
@@ -54,8 +55,12 @@ func (s SystemDao) RemoveById(ctx context.Context, id string) error {
 
 func postLoadSystems(systems ...model.System) (list []model.System) {
 	for _, each := range systems {
-		each.ID = each.DBKey.Name
-		list = append(list, each)
+		if each.DBKey != nil {
+			each.ID = each.DBKey.Name
+			list = append(list, each)
+		} else {
+			log.Println("ERROR:", each)
+		}
 	}
 	return list
 }

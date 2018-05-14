@@ -40,13 +40,6 @@ func (s SystemResource) Register() {
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Reads(model.System{})) // from the request
 
-	ws.Route(ws.POST("/").To(s.post).
-		Param(idParam).
-		// docs
-		Doc("update the system using its id").
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Reads(model.System{})) // from the request
-
 	ws.Route(ws.DELETE("/{id}").To(s.delete).
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		// docs

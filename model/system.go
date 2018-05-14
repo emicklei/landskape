@@ -1,0 +1,52 @@
+package model
+
+import "cloud.google.com/go/datastore"
+
+// System is the generic name for a IT landscape object.
+// Examples are: Webservice, Database schema, Ftp server, Third party solution
+type System struct {
+	// populated from DBKey
+	ID         string
+	Attributes []Attribute `datastore:",flatten"`
+	// internal
+	DBKey *datastore.Key `datastore:"__key__" json:"-"`
+	Journal
+}
+
+func NewSystem(id string) *System {
+	key := datastore.NameKey("landskape.System", id, nil)
+	key.Namespace = "landskape"
+	return &System{DBKey: key}
+}
+
+func (s System) AttributeList() []Attribute { return s.Attributes }
+
+func (s *System) DeleteAttribute(name string) {
+	s.SetAttribute(name, "")
+}
+
+func (s *System) SetAttribute(name, value string) {
+	if len(name) == 0 {
+		return
+	}
+	if len(value) == 0 {
+		// remove it
+		without := []Attribute{}
+		for _, each := range s.Attributes {
+			if each.Name != name {
+				without = append(without, each)
+			}
+		}
+		s.Attributes = without
+		return
+	}
+	// replace or add
+	for i, each := range s.Attributes {
+		if each.Name == name {
+			s.Attributes[i] = Attribute{Name: name, Value: value}
+			return
+		}
+	}
+	// not found, add it
+	s.Attributes = append(s.Attributes, Attribute{Name: name, Value: value})
+}
