@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"log"
+	"time"
 
 	"cloud.google.com/go/datastore"
 	"github.com/emicklei/landskape/model"
@@ -32,7 +33,8 @@ func (s SystemDao) Save(ctx context.Context, app *model.System) error {
 func (s SystemDao) FindAll(ctx context.Context) ([]model.System, error) {
 	var list []model.System
 	query := datastore.NewQuery(systemKind).Namespace("landskape")
-	_, err := s.client.GetAll(ctx, query, &list)
+	withTimeout, _ := context.WithDeadline(ctx, time.Now().Add(5*time.Second))
+	_, err := s.client.GetAll(withTimeout, query, &list)
 	return postLoadSystems(list...), err
 }
 

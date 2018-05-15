@@ -3,6 +3,7 @@ package rest
 import (
 	"bufio"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/emicklei/go-restful"
@@ -89,6 +90,7 @@ func (s SystemResource) get(req *restful.Request, resp *restful.Response) {
 }
 
 func (s SystemResource) getAll(req *restful.Request, resp *restful.Response) {
+	log.Println("/systems requested")
 	ctx := req.Request.Context()
 	apps, err := s.service.AllSystems(ctx)
 	if err != nil {

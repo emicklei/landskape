@@ -14,7 +14,7 @@ func NewSystemResource(s application.Logic) SystemResource {
 func (s SystemResource) Register() {
 	ws := new(restful.WebService)
 	tags := []string{"systems"}
-	ws.Path("/systems").
+	ws.Path("/v1/systems").
 		Consumes(restful.MIME_JSON).
 		Produces(restful.MIME_JSON)
 

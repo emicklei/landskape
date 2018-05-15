@@ -1,13 +1,14 @@
-service: landskape
+# https://cloud.google.com/appengine/docs/flexible/go/configuring-your-app-with-app-yaml
 runtime: go
-api_version: go1
+env: flex
+service: landskape
 
 env_variables:
 
-handlers:
-- url: /.*
-  script: _go_app
+manual_scaling:
+  instances: 1
 
-- url: /internal/.*
-  login: admin
-  script: _go_app
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10

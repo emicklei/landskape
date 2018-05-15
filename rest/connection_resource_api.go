@@ -17,7 +17,7 @@ func (c ConnectionResource) Register() {
 	ws := new(restful.WebService)
 	tags := []string{"connections"}
 
-	ws.Path("/connections").
+	ws.Path("/v1/connections").
 		Produces(restful.MIME_JSON)
 
 	ws.Route(ws.GET("/").
