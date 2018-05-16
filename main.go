@@ -24,19 +24,19 @@ import (
 var propertiesFile = flag.String("config", "landskape.properties", "the configuration file")
 
 func main() {
-	log.Print("[landskape] service startup...")
+	log.Print("[landskape startup...")
 	flag.Parse()
 	props, _ := properties.Load(*propertiesFile)
 
 	// prepare datastore
 	ds, err := datastore.NewClient(context.Background(), os.Getenv("GOOGLE_CLOUD_PROJECT"))
 	if err != nil {
-		log.Fatal("datastore client creation failed", err)
+		log.Fatal("datastore client creation failed, missing GOOGLE_CLOUD_PROJECT ?", err)
 	}
 
 	appDao := dao.NewSystemDao(ds)
 	conDao := dao.NewConnectionDao(ds)
-	service := application.Logic{appDao, conDao}
+	service := application.Logic{SystemDao: appDao, ConnectionDao: conDao}
 
 	rest.NewSystemResource(service).Register()
 	rest.NewConnectionResource(service).Register()
@@ -70,11 +70,10 @@ func enrichSwaggerObject(swo *spec.Swagger) {
 	swo.Info = &spec.Info{
 		InfoProps: spec.InfoProps{
 			Title:       "Landskape",
-			Description: "Flow diagrams for infrastructure",
+			Description: "Logical communication diagrams of system infrastructure",
 			Contact: &spec.ContactInfo{
-				Name:  "john",
-				Email: "john@doe.rp",
-				URL:   "http://johndoe.org",
+				Name: "Open-source tool by Ernest Micklei",
+				URL:  "https://github.com/emicklei/landskape",
 			},
 			License: &spec.License{
 				Name: "MIT",

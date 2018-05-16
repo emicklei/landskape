@@ -38,4 +38,24 @@ For example, after adding `team = A` to System A and `team = B` to System B then
 
 https://www.graphviz.org/doc/info/attrs.html
 
-(c) 2012-2017, ernestmicklei.com. MIT License
+### backup & restore
+
+You can use this `Makefile` to get data out and in landskape using the REST API.
+
+	backup: get_sys get_con
+
+	restore: put_sys put_con
+
+	get_sys:
+		curl http://localhost:8080/v1/systems > systems.json
+
+	put_sys:
+		curl -X POST -H "Content-Type:application/json" http://localhost:8080/v1/systems -d @systems.json
+
+	get_con:
+		curl http://localhost:8080/v1/connections > connections.json
+
+	put_con:
+		curl -X POST -H "Content-Type:application/json" http://localhost:8080/v1/connections -d @connections.json
+
+(c) 2012-2018, ernestmicklei.com. MIT License

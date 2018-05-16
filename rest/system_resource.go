@@ -90,7 +90,6 @@ func (s SystemResource) get(req *restful.Request, resp *restful.Response) {
 }
 
 func (s SystemResource) getAll(req *restful.Request, resp *restful.Response) {
-	log.Println("/systems requested")
 	ctx := req.Request.Context()
 	apps, err := s.service.AllSystems(ctx)
 	if err != nil {
@@ -119,6 +118,27 @@ func (s SystemResource) put(req *restful.Request, resp *restful.Response) {
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
+	}
+	resp.WriteHeader(http.StatusCreated)
+}
+
+func (s SystemResource) createAll(req *restful.Request, resp *restful.Response) {
+	list := []model.System{}
+	if err := req.ReadEntity(&list); err != nil {
+		resp.WriteError(400, err)
+		return
+	}
+	ctx := req.Request.Context()
+	for _, each := range list {
+		each.DBKey = model.NewSystemKey(each.ID)
+		// overwrite
+		_, err := s.service.SaveSystem(ctx, &each)
+		if err != nil {
+			log.Println("failed to create system", each.ID)
+			resp.WriteError(http.StatusInternalServerError, err)
+			return
+		}
+		log.Println("created system", each.ID)
 	}
 	resp.WriteHeader(http.StatusCreated)
 }

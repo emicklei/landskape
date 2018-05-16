@@ -6,14 +6,14 @@ import "cloud.google.com/go/datastore"
 // From and To refer to the Id of the System.
 // Example of Type are:  http, https, aq, jdbc, ftp, smtp
 type Connection struct {
-	Journal
+	// internal
+	DBKey *datastore.Key `datastore:"__key__" json:"-"`
+
 	From, To   string
 	Type       string      `datastore:"Type,noindex"`
 	Attributes []Attribute `datastore:",flatten"`
 	// populated
 	FromSystem, ToSystem System `datastore:"-" json:"-"`
-	// internal
-	DBKey *datastore.Key `datastore:"__key__" json:"-"`
 }
 
 func (c Connection) Validate() error {

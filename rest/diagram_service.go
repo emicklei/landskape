@@ -23,7 +23,7 @@ func NewDiagramService(s application.Logic) *restful.WebService {
 	d := DiagramResource{service: s}
 	tags := []string{"diagrams"}
 
-	ws.Path("/diagram").
+	ws.Path("/v1/diagrams").
 		Produces("text/plain")
 	ws.Route(ws.GET("/").To(d.computeDiagram).
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -32,6 +32,7 @@ func NewDiagramService(s application.Logic) *restful.WebService {
 		Param(ws.QueryParameter("to", "comma separated list of system ids")).
 		Param(ws.QueryParameter("type", "comma separated list of known connection types")).
 		Param(ws.QueryParameter("center", "comma separated list of system ids")).
+		Param(ws.QueryParameter("cluster", "show clusters based on the values of the give system attribute")).
 		Param(ws.QueryParameter("format", "svg (default), png")))
 	return ws
 }

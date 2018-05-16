@@ -1,5 +1,5 @@
 # https://cloud.google.com/appengine/docs/flexible/go/configuring-your-app-with-app-yaml
-runtime: go
+runtime: custom
 env: flex
 service: landskape
 

@@ -144,6 +144,26 @@ func (c *ConnectionResource) put(req *restful.Request, resp *restful.Response) {
 	resp.WriteHeader(201)
 }
 
+func (c *ConnectionResource) createAll(req *restful.Request, resp *restful.Response) {
+	list := []model.Connection{}
+	ctx := req.Request.Context()
+	if err := req.ReadEntity(&list); err != nil {
+		logError("createAll failed", err)
+		resp.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	for _, each := range list {
+		err := c.service.SaveConnection(ctx, each, req.QueryParameter("allowCreate") == "true")
+		if err != nil {
+			logError("createAll failed", err)
+			resp.WriteError(http.StatusInternalServerError, err)
+			return
+		}
+		log.Println("created", each.From, "->", each.Type, "->", each.To)
+	}
+	resp.WriteHeader(201)
+}
+
 func (c *ConnectionResource) delete(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
 	filter := model.ConnectionsFilter{

@@ -26,6 +26,12 @@ func (s SystemResource) Register() {
 		Doc("list all known systems").
 		Writes([]model.System{}))
 
+	ws.Route(ws.POST("").To(s.createAll).
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		// docs
+		Doc("create systems").
+		Reads([]model.System{}))
+
 	ws.Route(ws.GET("/{id}").To(s.get).
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		// docs

@@ -5,20 +5,25 @@ import "cloud.google.com/go/datastore"
 // System is the generic name for a IT landscape object.
 // Examples are: Webservice, Database schema, Ftp server, Third party solution
 type System struct {
-	// populated from DBKey
-	ID         string
-	Attributes []Attribute `datastore:",flatten"`
 	// internal
-	DBKey *datastore.Key `datastore:"__key__" json:"-"`
-	Journal
+	DBKey      *datastore.Key `datastore:"__key__" json:"-"`
+	Attributes []Attribute    `datastore:",flatten"`
+
+	// populated from DBKey
+	ID string `datastore:"-"`
 }
 
 func NewSystem(id string) *System {
-	key := datastore.NameKey("landskape.System", id, nil)
-	key.Namespace = "landskape"
-	return &System{DBKey: key}
+	return &System{DBKey: NewSystemKey(id)}
 }
 
+func NewSystemKey(id string) *datastore.Key {
+	key := datastore.NameKey("System", id, nil)
+	key.Namespace = "landskape"
+	return key
+}
+
+// AttributeList exists for AttributesHolder
 func (s System) AttributeList() []Attribute { return s.Attributes }
 
 func (s *System) DeleteAttribute(name string) {

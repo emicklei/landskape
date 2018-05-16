@@ -9,7 +9,7 @@ import (
 	"github.com/emicklei/landskape/model"
 )
 
-var systemKind = "landskape.System"
+var systemKind = "System"
 
 type SystemDao struct {
 	client *datastore.Client

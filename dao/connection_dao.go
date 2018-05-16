@@ -9,7 +9,7 @@ import (
 	"github.com/emicklei/tre"
 )
 
-const conKind = "landskape.Connection"
+const conKind = "Connection"
 
 type ConnectionDao struct {
 	client *datastore.Client

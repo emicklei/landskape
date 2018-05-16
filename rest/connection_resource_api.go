@@ -30,6 +30,13 @@ func (c ConnectionResource) Register() {
 		To(c.getFiltered).
 		Writes([]model.Connection{}))
 
+	ws.Route(ws.POST("/").
+		Doc(`Create all connections for existing or new systems.`).
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.QueryParameter("allowCreate", "if true then create any missing systems")).
+		To(c.createAll).
+		Reads([]model.Connection{}))
+
 	ws.Route(ws.PUT("/from/{from}/to/{to}/type/{type}").
 		Doc(`Create a new connection using the from,to,type values`).
 		Metadata(restfulspec.KeyOpenAPITags, tags).

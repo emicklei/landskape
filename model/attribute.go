@@ -3,7 +3,6 @@ package model
 // Attribute is a generic key-value pair of strings
 // Each attribute has its own lifecyle to track value changes
 type Attribute struct {
-	Journal
 	Name, Value string
 }
 
@@ -15,4 +14,13 @@ func AttributeValue(holder AttributesHolder, name string) string {
 		}
 	}
 	return ""
+}
+
+// For querying Systems and Connections ; each field can be a regular expression
+type AttributesFilter struct {
+	Name, Value string
+}
+
+type AttributesHolder interface {
+	AttributeList() []Attribute
 }
