@@ -31,11 +31,11 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 	// if system query parameter is given then first select all systems that match
 	// and compute the Centers value of the connection filter.
 	systemFilter := req.QueryParameter("system")
-	if len(systemFilter) == 0 || !strings.Contains(systemFilter, ":") {
-		resp.WriteError(400, errors.New("bad format system query parameter"))
-		return
-	}
 	if len(systemFilter) > 0 {
+		if !strings.Contains(systemFilter, ":") {
+			resp.WriteError(400, errors.New("bad format system query parameter"))
+			return
+		}
 		all, err := d.service.AllSystems(ctx)
 		if err != nil {
 			log.Printf("AllSystems failed:%#v", err)
