@@ -10,7 +10,6 @@ type ConnectionDataAccess interface {
 	FindAllMatching(ctx context.Context, filter model.ConnectionsFilter) ([]model.Connection, error)
 	Save(ctx context.Context, con model.Connection) error
 	Remove(ctx context.Context, con model.Connection) error
-	RemoveAllToOrFrom(ctx context.Context, toOrFrom string) error
 }
 
 type SystemDataAccess interface {

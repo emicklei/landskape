@@ -1,6 +1,8 @@
 package model
 
-import "cloud.google.com/go/datastore"
+import (
+	"cloud.google.com/go/datastore"
+)
 
 // System is the generic name for a IT landscape object.
 // Examples are: Webservice, Database schema, Ftp server, Third party solution
@@ -54,4 +56,14 @@ func (s *System) SetAttribute(name, value string) {
 	}
 	// not found, add it
 	s.Attributes = append(s.Attributes, Attribute{Name: name, Value: value})
+}
+
+// HasAttribute returns whether it has an attribute with the same name and value.
+func (s System) HasAttribute(a Attribute) bool {
+	for _, each := range s.Attributes {
+		if each.Name == a.Name && each.Value == a.Value {
+			return true
+		}
+	}
+	return false
 }

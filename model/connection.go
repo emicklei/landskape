@@ -1,6 +1,10 @@
 package model
 
-import "cloud.google.com/go/datastore"
+import (
+	"fmt"
+
+	"cloud.google.com/go/datastore"
+)
 
 // Connection is the generic name for a logical connection between 2 IT landscape object.
 // From and To refer to the Id of the System.
@@ -52,4 +56,12 @@ func (c *Connection) SetAttribute(name, value string) {
 
 func (c *Connection) DeleteAttribute(name string) {
 	c.SetAttribute(name, "")
+}
+
+func (c *Connection) String() string {
+	id := "?"
+	if c.DBKey != nil {
+		id = fmt.Sprintf("%d", c.DBKey.ID)
+	}
+	return fmt.Sprintf("%s: %s -> (%s) -> %s", id, c.From, c.Type, c.To)
 }

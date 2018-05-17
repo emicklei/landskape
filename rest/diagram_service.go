@@ -1,13 +1,14 @@
 package rest
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os/exec"
+	"strings"
 
 	"github.com/emicklei/go-restful"
-	restfulspec "github.com/emicklei/go-restful-openapi"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/model"
 )
@@ -18,25 +19,6 @@ type DiagramResource struct {
 	service application.Logic
 }
 
-func NewDiagramService(s application.Logic) *restful.WebService {
-	ws := new(restful.WebService)
-	d := DiagramResource{service: s}
-	tags := []string{"diagrams"}
-
-	ws.Path("/v1/diagrams").
-		Produces("text/plain")
-	ws.Route(ws.GET("/").To(d.computeDiagram).
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Doc(`Compute a graphical diagram with all (filtered) connections for all systems and the given scope`).
-		Param(ws.QueryParameter("from", "comma separated list of system ids")).
-		Param(ws.QueryParameter("to", "comma separated list of system ids")).
-		Param(ws.QueryParameter("type", "comma separated list of known connection types")).
-		Param(ws.QueryParameter("center", "comma separated list of system ids")).
-		Param(ws.QueryParameter("cluster", "show clusters based on the values of the give system attribute")).
-		Param(ws.QueryParameter("format", "svg (default), png")))
-	return ws
-}
-
 func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
 	filter := model.ConnectionsFilter{
@@ -44,7 +26,33 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 		Tos:     asFilterParameter(req.QueryParameter("to")),
 		Types:   asFilterParameter(req.QueryParameter("type")),
 		Centers: asFilterParameter(req.QueryParameter("center"))}
-	dotOnly := req.QueryParameter("format") == "dot"
+
+	// TODO optimize
+	// if system query parameter is given then first select all systems that match
+	// and compute the Centers value of the connection filter.
+	systemFilter := req.QueryParameter("system")
+	if len(systemFilter) == 0 || !strings.Contains(systemFilter, ":") {
+		resp.WriteError(400, errors.New("bad format system query parameter"))
+		return
+	}
+	if len(systemFilter) > 0 {
+		all, err := d.service.AllSystems(ctx)
+		if err != nil {
+			log.Printf("AllSystems failed:%#v", err)
+			resp.WriteError(500, err)
+			return
+		}
+		systemAttribute := model.ParseAttribute(systemFilter)
+		centers := []string{}
+		for _, each := range all {
+			if each.HasAttribute(systemAttribute) {
+				centers = append(centers, each.ID)
+			}
+		}
+		filter.Centers = centers
+	}
+	// END optimize
+
 	connections, err := d.service.AllConnections(ctx, filter)
 	if err != nil {
 		log.Printf("AllConnections failed:%#v", err)
@@ -68,6 +76,7 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 	dotBuilder.ClusterBy(req.QueryParameter("cluster"))
 	dotBuilder.BuildFromAll(connections)
 
+	dotOnly := req.QueryParameter("format") == "dot"
 	if dotOnly {
 		resp.AddHeader("Content-Type", "text/plain")
 		dotBuilder.WriteDot(resp)

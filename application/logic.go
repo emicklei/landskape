@@ -106,7 +106,17 @@ func (l Logic) GetSystem(ctx context.Context, id string) (model.System, error) {
 }
 
 func (l Logic) DeleteSystem(ctx context.Context, id string) error {
-	// TODO remove all its connections
+	filter := model.ConnectionsFilter{Centers: []string{id}}
+	cons, err := l.ConnectionDao.FindAllMatching(ctx, filter)
+	if err != nil {
+		return tre.New(err, "DeleteSystem failed")
+	}
+	for _, each := range cons {
+		if err := l.DeleteConnection(ctx, each); err != nil {
+			tre.New(err, "DeleteConnection failed", "id", each.DBKey.ID)
+		}
+	}
+
 	return l.SystemDao.RemoveById(ctx, id)
 }
 

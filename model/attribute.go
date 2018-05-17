@@ -1,5 +1,7 @@
 package model
 
+import "strings"
+
 // Attribute is a generic key-value pair of strings
 // Each attribute has its own lifecyle to track value changes
 type Attribute struct {
@@ -23,4 +25,9 @@ type AttributesFilter struct {
 
 type AttributesHolder interface {
 	AttributeList() []Attribute
+}
+
+func ParseAttribute(nameColonValue string) Attribute {
+	colon := strings.Index(nameColonValue, ":")
+	return Attribute{Name: nameColonValue[0:colon], Value: nameColonValue[colon+1:]}
 }

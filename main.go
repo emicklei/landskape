@@ -72,7 +72,7 @@ func enrichSwaggerObject(swo *spec.Swagger) {
 			Title:       "Landskape",
 			Description: "Logical communication diagrams of system infrastructure",
 			Contact: &spec.ContactInfo{
-				Name: "Open-source tool by Ernest Micklei",
+				Name: "E.Micklei",
 				URL:  "https://github.com/emicklei/landskape",
 			},
 			License: &spec.License{

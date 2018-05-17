@@ -19,10 +19,6 @@ RUN mkdir -p /usr/local/bin && ln -s /usr/bin/dot /usr/local/bin/dot
 # get executable from build
 COPY --from=0 /go/src/github.com/emicklei/landskape .
 
-# service account with access to DataStore
-COPY landskape.json /landskape.json
-ENV GOOGLE_APPLICATION_CREDENTIALS /landskape.json
-
 # REST port
 EXPOSE 8080
 

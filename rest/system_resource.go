@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"cloud.google.com/go/datastore"
 	"github.com/emicklei/go-restful"
 	"github.com/emicklei/landskape/application"
 	"github.com/emicklei/landskape/model"
@@ -72,7 +73,11 @@ func (s SystemResource) delete(req *restful.Request, resp *restful.Response) {
 	id := req.PathParameter("id")
 	err := s.service.DeleteSystem(ctx, id)
 	if err != nil {
-		resp.WriteError(http.StatusInternalServerError, err)
+		if datastore.ErrNoSuchEntity == err {
+			resp.WriteError(http.StatusNotFound, err)
+		} else {
+			resp.WriteError(http.StatusInternalServerError, err)
+		}
 		return
 	}
 }
@@ -83,7 +88,11 @@ func (s SystemResource) get(req *restful.Request, resp *restful.Response) {
 	id := req.PathParameter("id")
 	app, err := s.service.GetSystem(ctx, id)
 	if err != nil {
-		resp.WriteError(http.StatusInternalServerError, err)
+		if datastore.ErrNoSuchEntity == err {
+			resp.WriteError(http.StatusNotFound, err)
+		} else {
+			resp.WriteError(http.StatusInternalServerError, err)
+		}
 		return
 	}
 	resp.WriteEntity(app)

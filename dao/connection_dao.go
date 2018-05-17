@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"errors"
+	"log"
 
 	"cloud.google.com/go/datastore"
 	"github.com/emicklei/landskape/model"
@@ -43,6 +44,7 @@ func (s ConnectionDao) Save(ctx context.Context, con model.Connection) error {
 		key.Namespace = "landskape"
 		con.DBKey = key
 	}
+	log.Println("put connection", con.String())
 	_, err := s.client.Put(ctx, con.DBKey, &con)
 	return err
 }
@@ -51,9 +53,6 @@ func (s ConnectionDao) Remove(ctx context.Context, con model.Connection) error {
 	if con.DBKey == nil {
 		return errors.New("nil connection DBKey")
 	}
+	log.Println("delete connection", con.String())
 	return s.client.Delete(ctx, con.DBKey)
-}
-
-func (s ConnectionDao) RemoveAllToOrFrom(ctx context.Context, toOrFrom string) error {
-	return nil
 }

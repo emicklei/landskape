@@ -26,6 +26,7 @@ func (s SystemDao) Exists(ctx context.Context, id string) bool {
 }
 
 func (s SystemDao) Save(ctx context.Context, app *model.System) error {
+	log.Println("put system", app.DBKey.Name)
 	_, err := s.client.Put(ctx, app.DBKey, app)
 	return err
 }
@@ -52,6 +53,7 @@ func (s SystemDao) FindById(ctx context.Context, id string) (sys model.System, e
 func (s SystemDao) RemoveById(ctx context.Context, id string) error {
 	key := datastore.NameKey(systemKind, id, nil)
 	key.Namespace = "landskape"
+	log.Println("delete system", key.Name)
 	return s.client.Delete(ctx, key)
 }
 
