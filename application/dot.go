@@ -26,6 +26,7 @@ type dotBuilder struct {
 	nodes                map[string]string
 	graph                *dot.Graph
 	clusterAttributeName string
+	config               map[string]string
 }
 
 func NewDotBuilder() dotBuilder {
@@ -38,6 +39,10 @@ func NewDotBuilder() dotBuilder {
 func (e *dotBuilder) ClusterBy(clusterAttribute string) *dotBuilder {
 	e.clusterAttributeName = clusterAttribute
 	return e
+}
+
+func (e *dotBuilder) Config(c map[string]string) {
+	e.config = c
 }
 
 func (e edge) String() string {
@@ -59,11 +64,11 @@ func (e *dotBuilder) BuildFromAll(connections []model.Connection) {
 		to := toGraph.Node(each.ToSystem.ID)
 		if hasSet, ok := hasAttributesSet[each.FromSystem.ID]; !hasSet || !ok {
 			hasAttributesSet[each.FromSystem.ID] = true
-			setUIAttributesForSystem(from.AttributesMap, each.FromSystem)
+			e.setUIAttributesForSystem(from.AttributesMap, each.FromSystem)
 		}
 		if hasSet, ok := hasAttributesSet[each.ToSystem.ID]; !hasSet || !ok {
 			hasAttributesSet[each.ToSystem.ID] = true
-			setUIAttributesForSystem(to.AttributesMap, each.ToSystem)
+			e.setUIAttributesForSystem(to.AttributesMap, each.ToSystem)
 		}
 	}
 	for _, each := range connections {
@@ -73,7 +78,7 @@ func (e *dotBuilder) BuildFromAll(connections []model.Connection) {
 		to := toGraph.Node(each.ToSystem.ID)
 		// use fromGraph for adding the edge; the Edge func will find the common ancestor.
 		edge := fromGraph.Edge(from, to)
-		setUIAttributesForConnection(edge.AttributesMap, each)
+		e.setUIAttributesForConnection(edge.AttributesMap, each)
 	}
 }
 
@@ -90,8 +95,12 @@ func (e *dotBuilder) graphForSystem(sys model.System) *dot.Graph {
 	return e.graph.Subgraph(clusterValue, dot.ClusterOption{})
 }
 
-func setUIAttributesForSystem(a dot.AttributesMap, s model.System) {
-	a.Attr("label", s.ID) // can be overwritten is ui-label was set
+func (e *dotBuilder) setUIAttributesForSystem(a dot.AttributesMap, s model.System) {
+	a.Attr("label", s.ID)                                 // can be overwritten if ui-label was set
+	a.Attr("shape", e.config["default.ui-shape"])         // can be overwritten if ui-shape was set
+	a.Attr("color", e.config["default.ui-color"])         // can be overwritten if ui-color was set
+	a.Attr("style", e.config["default.ui-style"])         // can be overwritten if ui-style was set
+	a.Attr("fillcolor", e.config["default.ui-fillcolor"]) // can be overwritten if ui-fillcolor was set
 	for _, each := range s.Attributes {
 		if strings.HasPrefix(each.Name, "ui-") {
 			key := each.Name[3:]
@@ -102,8 +111,8 @@ func setUIAttributesForSystem(a dot.AttributesMap, s model.System) {
 	}
 }
 
-func setUIAttributesForConnection(a dot.AttributesMap, c model.Connection) {
-	a.Attr("label", c.Type) // can be overwritten is ui-label was set
+func (e *dotBuilder) setUIAttributesForConnection(a dot.AttributesMap, c model.Connection) {
+	a.Attr("label", c.Type) // can be overwritten if ui-label was set
 	for _, each := range c.Attributes {
 		if strings.HasPrefix(each.Name, "ui-") {
 			key := each.Name[3:]

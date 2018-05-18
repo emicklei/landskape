@@ -59,6 +59,10 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 		resp.WriteError(500, err)
 		return
 	}
+	layout := req.QueryParameter("layout")
+	if "" == layout {
+		layout = "dot"
+	}
 	format := req.QueryParameter("format")
 	if "" == format {
 		format = "svg"
@@ -73,6 +77,7 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 	output := fmt.Sprintf("%v/%v.%v", DotConfig["tmp"], id, format)
 
 	dotBuilder := application.NewDotBuilder()
+	dotBuilder.Config(DotConfig)
 	dotBuilder.ClusterBy(req.QueryParameter("cluster"))
 	dotBuilder.BuildFromAll(connections)
 
@@ -87,6 +92,7 @@ func (d DiagramResource) computeDiagram(req *restful.Request, resp *restful.Resp
 	cmd := exec.Command(DotConfig["binpath"],
 		fmt.Sprintf("-T%v", format),
 		fmt.Sprintf("-o%v", output),
+		fmt.Sprintf("-K%v", layout),
 		input)
 	err = cmd.Start()
 	if err != nil {

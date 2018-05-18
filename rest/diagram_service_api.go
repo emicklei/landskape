@@ -22,6 +22,16 @@ func NewDiagramService(s application.Logic) *restful.WebService {
 		Param(ws.QueryParameter("center", "comma separated list of system ids")).
 		Param(ws.QueryParameter("cluster", "show clusters based on the values of the give system attribute")).
 		Param(ws.QueryParameter("system", "format is name:value. Filter systems based on this attribute pair.")).
-		Param(ws.QueryParameter("format", "svg (default), png")))
+		Param(ws.QueryParameter("format", "svg (default), png, json, pdf, gif, jpg")).
+		Param(ws.QueryParameter("layout", `<ul>
+		<li>dot (default) - filter for drawing directed graphs</li>
+		<li>neato - filter for drawing undirected graphs</li>
+		<li>twopi - filter for radial layouts of graphs</li>
+		<li>circo - filter for circular layout of graphs</li>
+		<li>fdp - filter for drawing undirected graphs</li>
+		<li>sfdp - filter for drawing large undirected graphs</li>
+		<li>patchwork - filter for squarified tree maps</li>
+		<li>osage - filter for array-based layouts</li>
+		</ul>`)))
 	return ws
 }
