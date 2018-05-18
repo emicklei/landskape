@@ -1,26 +1,12 @@
-# Landskape - maintain and visualize connected systems 
+# Landskape - explore connected systems 
 
-### Installation
+## Installation
 
-		go get -u github.com/emicklei/landskape
+	go get -u github.com/emicklei/landskape
 
 ### Run locally
 
-    dev_appserver.py app.yaml
-
-Swagger
-
-	http://localhost:8888/swagger-ui/?url=http://localhost:8888/api-docs.json
-
-### Build
-
-To build the project locally and test it.
-
-	go get -u github.com/jteeuwen/go-bindata/...
-
-Make sure $GOPATH/bin is on your $PATH.
-
-	go generate
+    make run
 
 
 ## Attributes
@@ -57,5 +43,22 @@ You can use this `Makefile` to get data out and in landskape using the REST API.
 
 	put_con:
 		curl -X POST -H "Content-Type:application/json" http://localhost:8080/v1/connections -d @connections.json
+		
+## Deloy to GCP
+
+- enable Google App Engine Flexible Environment 		
+
+## Development
+
+To build the project locally and test it.
+
+	go get -u github.com/jteeuwen/go-bindata/...
+
+Make sure $GOPATH/bin is on your $PATH.
+
+	go generate
+	
+See `Makefile` for local docker instructions.
+
 
 (c) 2012-2018, ernestmicklei.com. MIT License
