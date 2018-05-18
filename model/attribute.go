@@ -5,7 +5,8 @@ import "strings"
 // Attribute is a generic key-value pair of strings
 // Each attribute has its own lifecyle to track value changes
 type Attribute struct {
-	Name, Value string
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // AttributeValue finds the value of an attribute for a given name, return empty string if not found

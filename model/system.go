@@ -9,10 +9,10 @@ import (
 type System struct {
 	// internal
 	DBKey      *datastore.Key `datastore:"__key__" json:"-"`
-	Attributes []Attribute    `datastore:",flatten"`
+	Attributes []Attribute    `datastore:",flatten" json:"attributes"`
 
 	// populated from DBKey
-	ID string `datastore:"-"`
+	ID string `datastore:"-" json:"id"`
 }
 
 func NewSystem(id string) *System {

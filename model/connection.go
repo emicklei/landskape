@@ -13,9 +13,10 @@ type Connection struct {
 	// internal
 	DBKey *datastore.Key `datastore:"__key__" json:"-"`
 
-	From, To   string
-	Type       string      `datastore:"Type,noindex"`
-	Attributes []Attribute `datastore:",flatten"`
+	From       string      `json:"from"`
+	To         string      `json:"to"`
+	Type       string      `datastore:"Type,noindex" json:"type"`
+	Attributes []Attribute `datastore:",flatten" json:"attributes"`
 	// populated
 	FromSystem, ToSystem System `datastore:"-" json:"-"`
 }

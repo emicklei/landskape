@@ -22,7 +22,8 @@ For example, after adding `team = A` to System A and `team = B` to System B then
 
 ### graphs
 
-https://www.graphviz.org/doc/info/attrs.html
+Attributes that are prefixed with `ui-` are used as [GraphViz attributes](https://www.graphviz.org/doc/info/attrs.html).
+For example, `ui-label=Deadpool` with set the node attribute `label` to the value `Deadpool`.
 
 ### backup & restore
 

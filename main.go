@@ -24,9 +24,11 @@ import (
 var propertiesFile = flag.String("config", "landskape.properties", "the configuration file")
 
 func main() {
-	log.Print("[landskape startup...")
+	log.Print("[landskape] startup...")
 	flag.Parse()
 	props, _ := properties.Load(*propertiesFile)
+	log.Println("[landskape]", props)
+	log.Println("[landskape] GOOGLE_CLOUD_PROJECT=", os.Getenv("GOOGLE_CLOUD_PROJECT"))
 
 	// prepare datastore
 	ds, err := datastore.NewClient(context.Background(), os.Getenv("GOOGLE_CLOUD_PROJECT"))
@@ -61,7 +63,7 @@ func main() {
 
 	port := props["http.server.port"]
 	publicHost := "localhost"
-	log.Println(fmt.Sprintf("[landskape] Swagger http://%s:%s/swagger-ui/?url=http://%s:%s/api-docs.json", publicHost, port, publicHost, port))
+	log.Println(fmt.Sprintf("[landskape] swagger http://%s:%s/swagger-ui/?url=http://%s:%s/api-docs.json", publicHost, port, publicHost, port))
 	log.Printf("[landskape] ready to serve on %v\n", basePath)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
