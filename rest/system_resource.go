@@ -100,12 +100,17 @@ func (s SystemResource) get(req *restful.Request, resp *restful.Response) {
 
 func (s SystemResource) getAll(req *restful.Request, resp *restful.Response) {
 	ctx := req.Request.Context()
+	// TODO optimize
 	apps, err := s.service.AllSystems(ctx)
 	if err != nil {
 		resp.WriteError(http.StatusInternalServerError, err)
 		return
 	}
-	resp.WriteEntity(apps)
+	ids := []string{}
+	for _, each := range apps {
+		ids = append(ids, each.ID)
+	}
+	resp.WriteEntity(ids)
 }
 
 // PUT /systems/{id}

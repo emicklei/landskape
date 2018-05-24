@@ -24,7 +24,7 @@ func (s SystemResource) NewWebService() *restful.WebService {
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		// docs
 		Doc("list all known systems").
-		Writes([]model.System{}))
+		Writes([]string{}))
 
 	ws.Route(ws.POST("").To(s.createAll).
 		Metadata(restfulspec.KeyOpenAPITags, tags).
