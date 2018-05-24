@@ -4,6 +4,8 @@ env: flex
 service: landskape
 
 env_variables:
+  # must be set
+  API_KEY: dev
 
 manual_scaling:
   instances: 1

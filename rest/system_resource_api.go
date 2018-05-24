@@ -11,7 +11,7 @@ func NewSystemResource(s application.Logic) SystemResource {
 	return SystemResource{service: s}
 }
 
-func (s SystemResource) Register() {
+func (s SystemResource) NewWebService() *restful.WebService {
 	ws := new(restful.WebService)
 	tags := []string{"systems"}
 	ws.Path("/v1/systems").
@@ -67,5 +67,5 @@ func (s SystemResource) Register() {
 		Doc("delete an attribute value").
 		Metadata(restfulspec.KeyOpenAPITags, tags))
 
-	restful.Add(ws)
+	return ws
 }

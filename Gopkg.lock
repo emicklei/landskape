@@ -67,6 +67,15 @@
   revision = "70524064aab17ece0fb3d63ff713db8853f38862"
 
 [[projects]]
+  name = "github.com/emicklei/go-selfdiagnose"
+  packages = [
+    ".",
+    "task"
+  ]
+  revision = "30e134a5c6fe0082c4b7ff79e493d708ec7e1527"
+  version = "v1.6.9"
+
+[[projects]]
   name = "github.com/emicklei/tre"
   packages = ["."]
   revision = "6532a42132095bf0f3e8eb6a5173f35040b241ec"
@@ -292,6 +301,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d5be6688b04329a6be36fbfa7df1a0a5c1d6337ebfbe361cef6c502ab1e5b7b9"
+  inputs-digest = "f6021c840915a5748443134b7aa3fb244326faa5face826d9898cc1e5daf7b6d"
   solver-name = "gps-cdcl"
   solver-version = 1

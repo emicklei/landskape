@@ -29,6 +29,7 @@ func main() {
 	props, _ := properties.Load(*propertiesFile)
 	log.Println("[landskape]", props)
 	log.Println("[landskape] GOOGLE_CLOUD_PROJECT=", os.Getenv("GOOGLE_CLOUD_PROJECT"))
+	initSelfdiagnose()
 
 	// prepare datastore
 	ds, err := datastore.NewClient(context.Background(), os.Getenv("GOOGLE_CLOUD_PROJECT"))
@@ -40,11 +41,19 @@ func main() {
 	conDao := dao.NewConnectionDao(ds)
 	service := application.Logic{SystemDao: appDao, ConnectionDao: conDao}
 
-	rest.NewSystemResource(service).Register()
-	rest.NewConnectionResource(service).Register()
+	wsSystem := rest.NewSystemResource(service).NewWebService()
+	wsConnection := rest.NewConnectionResource(service).NewWebService()
+	wsDiagram := rest.NewDiagramService(service)
 
-	// graphical diagrams
-	restful.Add(rest.NewDiagramService(service))
+	wsSystem.Filter(apiKeyAuthenticate)
+	wsConnection.Filter(apiKeyAuthenticate)
+	wsDiagram.Filter(apiKeyAuthenticate)
+
+	restful.Add(wsSystem)
+	restful.Add(wsConnection)
+	restful.Add(wsDiagram)
+
+	// for graphical diagrams
 	rest.DotConfig["binpath"] = props["dot.path"]
 	rest.DotConfig["tmp"] = props["dot.tmp"]
 
@@ -60,6 +69,7 @@ func main() {
 	// static file serving
 	swaggerUI := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, AssetInfo: AssetInfo, Prefix: "swagger-ui/dist"}
 	http.Handle("/swagger-ui/", http.StripPrefix("/swagger-ui/", http.FileServer(swaggerUI)))
+	restful.DefaultContainer.Add(IndexService())
 
 	port := props["http.server.port"]
 	publicHost := "localhost"
@@ -74,7 +84,7 @@ func enrichSwaggerObject(swo *spec.Swagger) {
 			Title:       "Landskape",
 			Description: "Logical communication diagrams of system infrastructure",
 			Contact: &spec.ContactInfo{
-				Name: "E.Micklei",
+				Name: "PhilemonWorks",
 				URL:  "https://github.com/emicklei/landskape",
 			},
 			License: &spec.License{
@@ -84,6 +94,13 @@ func enrichSwaggerObject(swo *spec.Swagger) {
 			Version: "1.0.0",
 		},
 	}
+	// setup security definitions
+	swo.SecurityDefinitions = map[string]*spec.SecurityScheme{
+		"api_key": spec.APIKeyAuth("api_key", "query"),
+	}
+	swo.Security = append(swo.Security, map[string][]string{
+		"api_key": []string{},
+	})
 	swo.Tags = []spec.Tag{spec.Tag{TagProps: spec.TagProps{
 		Name:        "systems",
 		Description: "Managing Systems"}}, spec.Tag{TagProps: spec.TagProps{

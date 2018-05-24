@@ -13,7 +13,7 @@ func NewConnectionResource(s application.Logic) ConnectionResource {
 
 const connectionTypes = "http,jdbc,grpc,pubsub,ftp,aq,..."
 
-func (c ConnectionResource) Register() {
+func (c ConnectionResource) NewWebService() *restful.WebService {
 	ws := new(restful.WebService)
 	tags := []string{"connections"}
 
@@ -73,5 +73,5 @@ func (c ConnectionResource) Register() {
 		Param(ws.PathParameter("type", "indicate type of connection, e.g. "+connectionTypes)).
 		To(c.delete))
 
-	restful.Add(ws)
+	return ws
 }
